@@ -286,7 +286,7 @@ This program prints an input line twice if it satisfies both conditions:
 
 Note that the program 
 
-	!($2 < 4 &.&. $3 < 20)
+	!($2 < 4 && $3 < 20)
 
 prints lines where it is not true that $2 is less than 4 and $3 is less than 20; this condition is equivalent to the first one above, though perhaps less readable.
 
@@ -297,5 +297,205 @@ There are always errors in real data. Awk is an excellent tool for checking that
 Data validation is essentially negative: instead of printing lines with desirable properties, one prints lines that are suspicious. The following program uses
 
 ================
+
+comparison patterns to apply five plausibility tests to each line of emp. data:
+
+	NF I= 3   { print $0, "number of fields is not equal to 3" }
+	$2 < 3.35 { print $0, "rate is below minimum wage" } 
+	$2 > 10   { print $0, "rate exceeds $10 per hour" }
+	$3 < 0    { print $0, "negative hours worked" }
+	$3 > 60   { print $0, "too many hours worked" }
+
+If there are no errors, there's no output.
+
+BEGIN and END
+
+The special pattern BEGIN matches before the first line of the first input ·file is read, and END matches after the last line of the last file has been processed. This program uses BEGIN to print a heading:
+
+	BEGIN { print "NAME RATE HOURS"; print "" } 
+	{ print }
+
+The output is: 
+
+	NAME  RATE  HOURS
+	Beth  4.00   0 
+        Dan   3.75   0 
+	Kathy 4.00   10 
+	Mark  5.00   20 
+	Mary  5.50   22 
+	Susie 4.25   18
+
+You can put several statements on a single line if you separate them by semi· colons. Notice that print "" prints a blank line, quite different from just plain print, which prints the current input line.
+
+1.5	Computing with AWK
+
+An action is a sequence of statements separated by newlines or semicolons. You have already seen examples in which the action was a single print state- ment. This section provides examples of statements for performing simple numeric and string computations. In these statements you can use not only the built-in variables like NF, but you can create your own variables for performing calculations, storing data, and the like. In awk, user-created variables are not declared.
+
+Counting
+
+This program uses a variable emp to count employees who have worked more than 15 hours:
+
+==========
+
+	$3> 15{emp=emp+1} 
+	END	{ print emp, "employees worked more than 15 hours" }
+
+For every line in which the third field exceeds 15, the previous value of emp is incremented by 1. With emp.data as input, this program yields:
+
+	3 employees worked more than 15 hours 
+
+Awk variables used as numbers begin life with the value 0, so we didn't need to
+initialize emp. 
+
+Computing Sums and Averages
+
+To count the number of employees, we can use the built-in variable NR, which holds the number of lines read so far; its value at the end of all input is the total number of lines read.
+
+	END { print NR, "employees" } 
+
+The output is:
+	6 employees 
+  Here is a program that uses NR to compute the average pay:
+
+	{ pay =pay + $2 * $3 } 
+	END { print NR, "employees"
+	      print "total pay is", pay 
+              print "average pay is", pay/NR
+            }
+
+The first action accumulates the total pay for all employees. The END action prints
+
+	6 employees 
+	total pay is 337.5 
+	average pay is 56.25
+
+Clearly,printf could be	used to	produce	neater output.	There's	also a potential error: in the unlikely case that NR is zero, the program will attempt to divide by zero and thus will generate an error message.
+
+Handling Text
+
+One of the strengths of awk is its ability to handle strings of characters as conveniently as most languages handle numbers. Awk variables can hold strings of characters as well as numbers. This program finds the employee who is paid the most per hour:
+
+	$2 > maxrate { maxrate =$2; maxemp =$1 } 
+	END { print "highest hourly rate:", maxrate, "for", maxemp }
+
+It prints
+
+=========
+
+	highest hourly rate: 5.50 for Mary
+
+In this program the variable maxrate holds a numeric value, while the variable maxemp holds a string. (If there are several employees who all make the same maximum pay, this program finds only the first.}
+
+String Concatenation
+
+New strings may be created by combining old ones; this operation is called concatenation. The program
+
+	{ names = names $1 " " } 
+	END { print names }
+
+collects all the employee names into a single string, by appending each name and a blank to the previous value in the variable names. The value of names is printed by the END action:
+
+	Beth Dan Kathy Mark Mary Susie
+
+The concatenation operation is represented in an awk program by writing string values one after the other. At every input line, the first statement in the pro- gram concatenates three strings: the previous value of names, the first field, and a blank; it then assigns the resulting string to names. Thus, after all input lines have been read, names contains a single string consisting of the names of all the employees, each followed by a blank. Variables used to store strings begin life holding the null string (that is, the string containing no characters), so in this program names did not need to be explicitly initialized.
+
+Printing the Last Input Line
+
+Although NR retains its value in an END action, $0 does not. The program 
+
+	{ last = $0 }
+	END { print last } 
+
+is one way to print the last input line:
+
+	Susie	4.25	18 
+
+Built-in Functions
+
+We have already seen that awk provides built-in variables that maintain fre- quently used quantities like the number of fields and the input line number. Similarly, there are built-in functions for computing other useful values. Besides arithmetic functions for square roots, logarithms, random numbers, and the like, there are also functions that manipulate text. One of these is length, which counts the number of characters in a string. For example, this program computes the length of each person's name:
+
+===============
+
+	{ print $1, length($1) } 
+
+The result:
+
+	Beth 4 
+	Dan 3 
+	Kathy 5 
+	Mark 4 
+	Mary 4 
+	Susie 5
+
+Counting Lines, Words, and Characters
+
+This program uses length, NF, and NR to count the number of lines, words, and characters in the input. For convenience, we'll treat each field as a word.
+
+	{ nc =nc + length($0) + 1 
+	  nw =nw + NF
+        }
+   END	{ print NR, "lines,.., nw, 11words,", nc, 11Characters" } 
+
+The file emp.data has
+
+	6 lines, 18 words, 77 characters
+
+We have added one for the newline character at the end of each input line, since $0 doesn't include it.
+
+1.6Control-Flow Statements
+
+Awk provides an if-else statement for making decisions and several state- ments for writing loops, all modeled on those found in the C programming language. They can only be used in actions.
+
+If-Else Statement
+
+The following program computes the total and average pay of employees making more than $6.00 an hour. It uses an if to defend against division by zero in computing the average pay.
+	$2 > 6 { n =n + 1; pay =pay + $2 * $3} 
+	END    { if (n > 0)
+		     print n, "employees, total pay is" , pay, 
+                              "average pay is" , pay/n
+		 else 
+		     print "no employees are paid more than $6/hour"
+               }
+
+The output for emp. data is:
+
+=============
+
+	no employees are paid more than $6/hour
+
+In the i f - else statement,the	condition following the	if is evaluated. If it is true,	the first print	statement is performed.	Otherwise, the second print statement is performed. Note that we can continue a long statement over several lines by breaking it after a comma.
+
+While Statement
+
+A while	statement has a	condition and a	body. The statements in	the body are performed repeatedly while the condition is true. This program shows how the value of an amount of money invested at a particular interest rate grows over a number of years, using the formula value = amount (1 +rate)years.
+
+	# interest1 - compute compound interest 
+	#    input: amount rate years 
+	#    output: compounded value at the end of each year
+	{ i=1 
+	  while (i <= $3) {
+	      printf("\t%.2f\n", $1 * (1 + $2) ^i) 
+              i=i+1
+          }
+	} 
+ 
+The condition is the parenthesized expression after the while; the loop body is the two statements enclosed in braces after the condition. The \.t in the printf specification string stands for a tab character; the " is the exponentia- tion operator. Text from a # to the end of the line is a comment, which is ignored by awk but should be helpful to readers of the program who want to understand what is going on.
+
+You can type triplets of numbers at this program to see what various amounts, rates, and years produce. For example, this transaction shows how $1000 grows at 6% and 12% compound interest for five years:
+	$ awk -f interest1 
+	1000 .06 5
+		1060.00 
+		1123.60 
+		1191.02 
+		1262.48 
+		1338.23
+	1000 .12 5 
+		1120.00
+		1254.40 
+		1404.93 
+		1573.52 
+		1762.34
+
+
 
 
