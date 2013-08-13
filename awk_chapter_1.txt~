@@ -329,7 +329,7 @@ You can put several statements on a single line if you separate them by semicolo
 
 1.5	Computing with AWK
 
-An action is a sequence of statements separated by newlines or semicolons. You have already seen examples in which the action was a single print statement. This section provides examples of statements for performing simple numeric and string computations. In these statements you can use not only the built-in variables like NF, but you can create your own variables for performing calculations, storing data, and the like. In awk, user-created variables are not declared.
+An action is a sequence of statements separated by newlines or semicolons. You have already seen examples in which the action was a single print state- ment. This section provides examples of statements for performing simple numeric and string computations. In these statements you can use not only the built-in variables like NF, but you can create your own variables for performing calculations, storing data, and the like. In awk, user-created variables are not declared.
 
 Counting
 
