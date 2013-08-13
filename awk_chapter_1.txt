@@ -300,7 +300,7 @@ Data validation is essentially negative: instead of printing lines with desirabl
 
 comparison patterns to apply five plausibility tests to each line of emp. data:
 
-	NF I= 3   { print $0, "number of fields is not equal to 3" }
+	NF != 3   { print $0, "number of fields is not equal to 3" }
 	$2 < 3.35 { print $0, "rate is below minimum wage" } 
 	$2 > 10   { print $0, "rate exceeds $10 per hour" }
 	$3 < 0    { print $0, "negative hours worked" }

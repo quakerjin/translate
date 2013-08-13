@@ -288,7 +288,25 @@ Awk 的模式匹配非常适合我们从输入的文件中筛选出我们需要�
 
 在现实的数据中，总会有些错误。对于检查数据的合理性，是否具有正确的格式这种被称为数据验证的工作来说，awk是一个优秀的工具。
 
-数据验证本质是一种找错工作：输出不符合要求的行，不输出符合要求的行。
+数据验证本质是一种找错工作：输出不符合要求的行，不输出符合要求的行。下面的程序应用了5个比较模式，对emp.data文件的每一行进行五种合理性的检查。
+
+
+	NF != 3   { print $0, "number of fields is not equal to 3" }
+	$2 < 3.35 { print $0, "rate is below minimum wage" } 
+	$2 > 10   { print $0, "rate exceeds $10 per hour" }
+	$3 < 0    { print $0, "negative hours worked" }
+	$3 > 60   { print $0, "too many hours worked" }
+
+如果emp.data文件里面没有错误，那么这个程序就不会有任何输出。
+
+BEGIN 和 END
+
+特定的BEGIN 模式匹配第一个输入文件的第一行读入之前，特定的END模式匹配最后一个输入文件的最后一行被处理之后。下面的程序使用 BEGIN 打印出一个表头：
+
+	BEGIN { print "NAME RATE HOURS"; print "" } 
+	{ print }
+
+
 
 
 
