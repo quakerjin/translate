@@ -325,6 +325,39 @@ BEGIN 和 END
 
 awk 的变量默认值为数字 0 ，  所以我们不需要初始化 emp 。
 
+计算总数和平均值
+
+我们可以利用内置的 NR 这个变量来得到员工的总数，这个变量保存着读入的行数，在所有的行都读入之后，它的值就是读入的行数。
+
+	END { print NR, "employees" } 
+
+输出结果是 ：
+
+	6 employees 
+
+下面这个程序利用NR 来计算平均工资值：
+
+	{ pay =pay + $2 * $3 } 
+	END { print NR, "employees"
+	      print "total pay is", pay 
+              print "average pay is", pay/NR
+            }
+
+第一个行为是统计出所有员工的工资总额。这个 END 总的输出如下：
+
+	6 employees 
+	total pay is 337.5 
+	average pay is 56.25
+
+很明显， printf 也可以产生近似的输出。这里有一个潜在的错误：在不常见的例子里面，NR 的值是零，程序试图用零做除数，因此会产生一个错误信息。
+
+处理文本
+
+
+
+
+
+
 
 
 

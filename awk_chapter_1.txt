@@ -320,7 +320,7 @@ The output is:
 	NAME  RATE  HOURS
 
 	Beth  4.00   0 
-    Dan   3.75   0 
+        Dan   3.75   0 
 	Kathy 4.00   10 
 	Mark  5.00   20 
 	Mary  5.50   22 
@@ -354,8 +354,10 @@ To count the number of employees, we can use the built-in variable NR, which hol
 	END { print NR, "employees" } 
 
 The output is:
+
 	6 employees 
-  Here is a program that uses NR to compute the average pay:
+
+Here is a program that uses NR to compute the average pay:
 
 	{ pay =pay + $2 * $3 } 
 	END { print NR, "employees"
