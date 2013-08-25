@@ -37,6 +37,8 @@ git clone git@github.com:quakerjin/translate
 
 这个命令运行完毕后，会在当前文件夹下建立一个 translate 的文件夹，里面就是远程的文件内容。
 
+同时，clone远程库后便会自动创建一个名为origin的远程库，可以使用git remote -v命名查看远程库的详细信息
+
 5.添加新文件到本地仓库和远程仓库
 
 文件添加流程：
@@ -52,13 +54,17 @@ git commit -m "提交说明"
 
 如果需要提交到远程的仓库，需要用如下方法添加：
 
-git remote add 1.txt git@github.com:quakerjin/translate 
+当你完成本地工作，并将改动提交到本地版本库后，你便可以使用push将本地提交推送到远程仓库了：
 
-这条命令把文件提交到了远程的缓存区
+# $ git push <remote-name> <branch-name>
+$ git push pro-git master
 
-然后运行下面的命令把文件提交到远程仓库：
+默认会使用origin和master作为远程仓库和本地分支的名称。
 
-git push 1.txt 
+$ git push origin master
+
+就把本地内容提交到远程版本库了。
+
 
 6.日常反复提交文件
 
@@ -77,9 +83,11 @@ git commit -m "提交说明"
 
 然后再提交到远程仓库
 
-git push 1.txt
+git push origin master
 
+把远程版本库的内容下载下来，更新本地文件
 
+git pull 
 
 
 
