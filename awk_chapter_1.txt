@@ -399,7 +399,7 @@ collects all the employee names into a single string, by appending each name and
 
 	Beth Dan Kathy Mark Mary Susie
 
-The concatenation operation is represented in an awk program by writing string values one after the other. At every input line, the first statement in the pro- gram concatenates three strings: the previous value of names, the first field, and a blank; it then assigns the resulting string to names. Thus, after all input lines have been read, names contains a single string consisting of the names of all the employees, each followed by a blank. Variables used to store strings begin life holding the null string (that is, the string containing no characters), so in this program names did not need to be explicitly initialized.
+The concatenation operation is represented in an awk program by writing string values one after the other. At every input line, the first statement in the program concatenates three strings: the previous value of names, the first field, and a blank; it then assigns the resulting string to names. Thus, after all input lines have been read, names contains a single string consisting of the names of all the employees, each followed by a blank. Variables used to store strings begin life holding the null string (that is, the string containing no characters), so in this program names did not need to be explicitly initialized.
 
 Printing the Last Input Line
 
@@ -414,7 +414,7 @@ is one way to print the last input line:
 
 Built-in Functions
 
-We have already seen that awk provides built-in variables that maintain fre- quently used quantities like the number of fields and the input line number. Similarly, there are built-in functions for computing other useful values. Besides arithmetic functions for square roots, logarithms, random numbers, and the like, there are also functions that manipulate text. One of these is length, which counts the number of characters in a string. For example, this program computes the length of each person's name:
+We have already seen that awk provides built-in variables that maintain frequently used quantities like the number of fields and the input line number. Similarly, there are built-in functions for computing other useful values. Besides arithmetic functions for square roots, logarithms, random numbers, and the like, there are also functions that manipulate text. One of these is length, which counts the number of characters in a string. For example, this program computes the length of each person's name:
 
 ===============
 
