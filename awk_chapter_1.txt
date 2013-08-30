@@ -436,7 +436,7 @@ This program uses length, NF, and NR to count the number of lines, words, and ch
 	{ nc =nc + length($0) + 1 
 	  nw =nw + NF
         }
-   END	{ print NR, "lines,.., nw, 11words,", nc, 11Characters" } 
+   END	{ print NR, "lines,.., nw, "words,", nc, "Characters" } 
 
 The file emp.data has
 
