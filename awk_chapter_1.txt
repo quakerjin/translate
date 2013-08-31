@@ -436,7 +436,7 @@ This program uses length, NF, and NR to count the number of lines, words, and ch
 	{ nc =nc + length($0) + 1 
 	  nw =nw + NF
         }
-   END	{ print NR, "lines,.., nw, "words,", nc, "Characters" } 
+   END	{ print NR, "lines," nw, "words,", nc, "Characters" } 
 
 The file emp.data has
 
@@ -444,13 +444,14 @@ The file emp.data has
 
 We have added one for the newline character at the end of each input line, since $0 doesn't include it.
 
-1.6Control-Flow Statements
+1.6 Control-Flow Statements
 
-Awk provides an if-else statement for making decisions and several state- ments for writing loops, all modeled on those found in the C programming language. They can only be used in actions.
+Awk provides an if-else statement for making decisions and several statements for writing loops, all modeled on those found in the C programming language. They can only be used in actions.
 
 If-Else Statement
 
 The following program computes the total and average pay of employees making more than $6.00 an hour. It uses an if to defend against division by zero in computing the average pay.
+
 	$2 > 6 { n =n + 1; pay =pay + $2 * $3} 
 	END    { if (n > 0)
 		     print n, "employees, total pay is" , pay, 
@@ -465,7 +466,7 @@ The output for emp. data is:
 
 	no employees are paid more than $6/hour
 
-In the i f - else statement,the	condition following the	if is evaluated. If it is true,	the first print	statement is performed.	Otherwise, the second print statement is performed. Note that we can continue a long statement over several lines by breaking it after a comma.
+In the if - else statement, the	condition following the	if is evaluated. If it is true,	the first print	statement is performed.	Otherwise, the second print statement is performed. Note that we can continue a long statement over several lines by breaking it after a comma.
 
 While Statement
 
@@ -481,9 +482,10 @@ A while	statement has a	condition and a	body. The statements in	the body are per
           }
 	} 
  
-The condition is the parenthesized expression after the while; the loop body is the two statements enclosed in braces after the condition. The \.t in the printf specification string stands for a tab character; the " is the exponentia- tion operator. Text from a # to the end of the line is a comment, which is ignored by awk but should be helpful to readers of the program who want to understand what is going on.
+The condition is the parenthesized expression after the while; the loop body is the two statements enclosed in braces after the condition. The \t in the printf specification string stands for a tab character; the ^ is the exponentiation operator. Text from a # to the end of the line is a comment, which is ignored by awk but should be helpful to readers of the program who want to understand what is going on.
 
 You can type triplets of numbers at this program to see what various amounts, rates, and years produce. For example, this transaction shows how $1000 grows at 6% and 12% compound interest for five years:
+
 	$ awk -f interest1 
 	1000 .06 5
 		1060.00 
