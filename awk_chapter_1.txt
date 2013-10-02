@@ -66,13 +66,13 @@ Let's step back a moment and look at what is going on. In the command lines abov
 	pattern { action }
 	...
 
-The basic operation of awk is to scan a sequence of input lines one after another, searching for lines that are matched by any of the patterns in the pro- gram. The precise meaning of the word "match" depends on the pattern in
+The basic operation of awk is to scan a sequence of input lines one after another, searching for lines that are matched by any of the patterns in the program. The precise meaning of the word "match" depends on the pattern in
 
 =================
 
 question; for patterns like $3 > 0, it means "the condition is true." 
 
-Every input line is tested against each of the patterns in turn. For each pat- tern that matches, the corresponding action (which may involve multiple steps) is performed. Then the next line is read and the matching starts over. This continues until all the input has been read. 
+Every input line is tested against each of the patterns in turn. For each pattern that matches, the corresponding action (which may involve multiple steps) is performed. Then the next line is read and the matching starts over. This continues until all the input has been read. 
 
 The programs above are typical examples of patterns and actions.
 
@@ -113,7 +113,7 @@ You can omit the input files from the command line and just type
 
 	awk  'program '
 
-In this case awk will apply the program to whatever you type next on your ter- minal until you type an end-of-file signal (control-d on Unix systems). Here is a sample of a session on Unix:
+In this case awk will apply the program to whatever you type next on your terminal until you type an end-of-file signal (control-d on Unix systems). Here is a sample of a session on Unix:
 
 ====================
 
@@ -785,12 +785,13 @@ The rest of the book elaborates on these basic ideas. Since some of the examples
 This chapter explains, mostly with examples, the constructs that make up awk programs. Because it's a description of the complete language, the material is detailed, so we recommend that you skim it, then come back as necessary to check up on details.
 
 The simplest awk program is a sequence of pattern-action statements: 
+
 	pattern	{ action }
 	pattern { action }
 
 In some statements, the pattern may be missing; in others, the action and its enclosing braces may be missing. After awk has checked your program to make sure there are no syntactic errors, it reads the input a line at a time, and for each line, evaluates the patterns in order. For each pattern that matches the current input line, it executes the associated action. A missing pattern matches every input line, so every action with no pattern is performed at each line. A pattern-action statement consisting only of a pattern prints each input line matched by the pattern. Throughout most of this chapter, the terms "input line" and "record" are used synonymously. In Section 2.5, we will discuss multiline records, where a record may contain several lines.
 
-The first section of this chapter describes patterns in detail. The second sec- tion begins the description of actions by describing expressions, assignments, and control-flow statements. The remaining sections cover function definitions, out- put, input, and how awk programs can call other programs. Most sections con- tain summaries of major features.
+The first section of this chapter describes patterns in detail. The second section begins the description of actions by describing expressions, assignments, and control-flow statements. The remaining sections cover function definitions, output, input, and how awk programs can call other programs. Most sections contain summaries of major features.
 
 The Input File countries
 
@@ -801,10 +802,10 @@ As input for many of the awk programs in this chapter, we will use a file called
 
 The file countries contains the following lines:
 
-	USSR 	  8649   275    Asia 
+	USSR 	  8649   275    Asia    
 	Canada	  3852   25     North America
 	China     3705   1032   Asia
-  	USA	  3615   237    North America
+  	USA	      3615   237    North America
 	Brazil 	  3286   134    South America
 	India 	  1267   746    Asia
 	Mexico 	  762    78     North America
@@ -824,6 +825,7 @@ The opening brace of an action must be on the same line as the pattern it accomp
 Blank lines are ignored; they may be inserted before or after any statement to improve the readability of a program. Blanks and tabs may be inserted around operators and operands, again to enhance readability.
 
 Comments may be inserted at the end of any line. A comment starts with the character # and finishes at the end of the line, as in
+
 	{ print S1, $3 }     # print country name and population 
 
 A long statement may be spread over several lines by inserting a backslash and newline at each break:
@@ -835,13 +837,13 @@ A long statement may be spread over several lines by inserting a backslash and n
 
 As this example shows, statements may also be broken after commas, and a comment may be inserted at the end of each broken line.
 
-In this book we have used several formatting styles, partly to illustrate dif- ferent ones, and partly to keep programs from occupying too many lines. For short programs like those in this chapter, format doesn't much matter, but con- sistency and readability will help to keep longer programs manageable.
+In this book we have used several formatting styles, partly to illustrate different ones, and partly to keep programs from occupying too many lines. For short programs like those in this chapter, format doesn't much matter, but consistency and readability will help to keep longer programs manageable.
 
 ==================
 
 2.1 Patterns
 
-Patterns control the execution of actions: when a pattern matches, its associ- ated action is executed. This section describes the six types of patterns and the conditions under which they match.
+Patterns control the execution of actions: when a pattern matches, its associated action is executed. This section describes the six types of patterns and the conditions under which they match.
 
 =======================================================
 
@@ -880,12 +882,12 @@ One common use of a BEGIN action is to change the default way that input lines a
 
 called FS. By default, fields are separated by blanks and/or tabs; this behavior occurs when FS is set to a blank. Setting FS to any character other than a blank makes that character the field separator.
 
-The following program uses the BEGIN action to set the field separator to a tab character (\t) and to put column headings on the output. The second print£ statement, which is executed at each input line, formats the output into a table, neatly aligned under the column headings. The END action prints the totals. (Variables and expressions are discussed in Section 2.2.)
+The following program uses the BEGIN action to set the field separator to a tab character (\t) and to put column headings on the output. The second printf statement, which is executed at each input line, formats the output into a table, neatly aligned under the column headings. The END action prints the totals. (Variables and expressions are discussed in Section 2.2.)
 
 	# print countries with column headers and totals
 	BEGIN { FS ="\t"	# make tab the field separator 
-		printf("%10s %6s %5s	%s\n\n",
-			"COUNTRY",	"AREA",	" P O P " ,	"CONTINENT")
+		printf("%10s %6s %5s %s\n\n",
+			"COUNTRY",	"AREA",	" POP " , "CONTINENT")
 	      }
 	      { printf ("%10s %6d %5d	%s\n", $1, $2, $3, $4) 
 		area = area + $2 
@@ -900,20 +902,20 @@ With the countries file as input, this program produces
 	USSR 		8649 	275 	Asia 
 	Canada		3852	25  	North America
 	China 		3705 	1032 	Asia
-	USA		3615	237 	North America
+	USA	    	3615	237 	North America
 	Brazil		3286	134 	South America
 	India 		1267 	746 	Asia 
-	Mexico		762	78 	North America
-	France		211	55 	Europe
+	Mexico		762 	78 	    North America
+	France		211	    55 	    Europe
 	Japan 		144 	120 	Asia
-	Germany		96	61 	Europe
-	England		94	56     	Europe
+	Germany		96	    61 	    Europe
+	England		94	    56     	Europe
 
 	 TOTAL    25681	  2819
 
 Expressions as Patterns
 
-Like most programming languages, awk is rich in expressions for describing numeric computations. Unlike many flanguages, awk also has expressions for describing operations on strings. Thrm\ghout this book, the term string means a sequence of zero or more characters. These may be stored in variables, or appear literally as string constants like '"' or "Asia". The string "", which contains no characters, is called the null string. The term substring means a contiguous sequence of zero or more characters within a string. In every string, the null string appears as a substring of length zero before the first character, between every pair of adjacent characters, and after the last character.
+Like most programming languages, awk is rich in expressions for describing numeric computations. Unlike many languages, awk also has expressions for describing operations on strings. Throughout this book, the term string means a sequence of zero or more characters. These may be stored in variables, or appear literally as string constants like "" or "Asia". The string "", which contains no characters, is called the null string. The term substring means a contiguous sequence of zero or more characters within a string. In every string, the null string appears as a substring of length zero before the first character, between every pair of adjacent characters, and after the last character.
 
 ==================
 
