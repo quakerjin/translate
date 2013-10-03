@@ -990,7 +990,7 @@ Note that blanks are significant within	regular	expressions: the string-matching
 
 =====================
 
-	String-Matching Patterns
+========== String-Matching Patterns  ============
 
 1. /regexpr / 
    Matches when the current input line contains a substring matched by regexpr.
@@ -1034,7 +1034,9 @@ matches if the fourth field does not contain Asia anywhere.
 
 Note that the string-matching pattern
 
-/Asia/ is a shorthand for
+    /Asia/ 
+
+is a shorthand for
 
 	$0 ~ /Asia/
 
@@ -1059,7 +1061,7 @@ A regular expression is a notation for specifying and matching strings. Like an 
    $, which matches the end of a string.
    ., which matches any single character. 
    a character class: [ABC] matches any of the characters A. B, or C. 
-   character classes may include abbreviations: [A-Za-z 1 matches any single letter. 
+   character classes may include abbreviations: [A-Za-z] matches any single letter. 
    a complemented character class: [^0-9] matches any character except a digit.
 
 3. These operators combine regular expressions into larger ones: 
@@ -1076,9 +1078,9 @@ The basic regular expressions are summarized in the table above. The characters
 
 	\ ^ $ . [ ] | ( ) * + ?
 
-are called metacharacters because they have special meanings. A regular expression consisting of a single nonmetacharacter matches itself. Thus, a sin- gle letter or digit is a basic regular expression that matches itself. To preserve the literal meaning of a metacharacter in a regular expression, precede it by a backslash. Thus, the regular expression '$ matches the character $. If a char- acter is preceded by a single '· we'll say that character is quoted.
+are called metacharacters because they have special meanings. A regular expression consisting of a single nonmetacharacter matches itself. Thus, a single letter or digit is a basic regular expression that matches itself. To preserve the literal meaning of a metacharacter in a regular expression, precede it by a backslash. Thus, the regular expression \$ matches the character $. If a character is preceded by a single \· we'll say that character is quoted.
 
-In a regular expression, an unquoted caret ^ matches the beginning of a string, an unquoted dollar-sign $ matches the end of a string, and an unquoted period • matches any single character. Thus,
+In a regular expression, an unquoted caret ^ matches the beginning of a string, an unquoted dollar-sign $ matches the end of a string, and an unquoted period .  matches any single character. Thus,
 
 
 
