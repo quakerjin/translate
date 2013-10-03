@@ -921,30 +921,30 @@ Like most programming languages, awk is rich in expressions for describing numer
 
 Any expression can be used as an operand of any operator. If an expression has a numeric value but an operator requires a string value, the numeric value is automatically transformed into a string; similarly, a string is converted into a number when an operator demands a numeric value.
 
-Any expression can be used as a pattern. If an expression used as a pattern has a nonzero or nonnull value at the current input line, then the pattern matches that line. The typical expression patterns are those involving comparis- ons between numbers or strings. A comparison expression contains one of the six relational operators, or one of the two string-matching operators ~ (tilde) and !~ that will be discussed in the next section. These operators are listed in Table 2-1.
+Any expression can be used as a pattern. If an expression used as a pattern has a nonzero or nonnull value at the current input line, then the pattern matches that line. The typical expression patterns are those involving comparisons between numbers or strings. A comparison expression contains one of the six relational operators, or one of the two string-matching operators ~ (tilde) and !~ that will be discussed in the next section. These operators are listed in Table 2-1.
 
 TABLE 2-1.  COMPARISON	OPERATORS
 
 	     OPERATOR    MEANING
-	 	<	  less than 
-		<=     	  less than or equal to
-		==        equal to
-		!=        not equal to
-		>=        greater than or equal to 
-		>         greater than
-		~         matched
-		!~        not matched by
+	 	    <	      less than 
+		    <=     	  less than or equal to
+		    ==        equal to
+		    !=        not equal to
+		    >=        greater than or equal to 
+		    >         greater than
+		    ~         matched
+		    !~        not matched by
 
 If the pattern is a comparison expression like NF> 10, then it matches the current input line when the condition is satisfied, that is, when the number of fields in the line is greater than ten. If the pattern is an arithmetic expression like NF, it matches the current input line when its numeric value is nonzero. If the pattern is a string expression, it matches the current input line when the string value of the expression is nonnull.
 
-In a relational comparison, if both operands are numeric, a numeric com- parison is made; otherwise, any numeric operand is converted to a string, and then the operands are compared as strings. The strings are compared character by character using the ordering provided by the machine, most often the ASCII character set. One string is said to be "less than" another if it would appear before the other according to this ordering, e.g., "Canada" < "China" and 
+In a relational comparison, if both operands are numeric, a numeric comparison is made; otherwise, any numeric operand is converted to a string, and then the operands are compared as strings. The strings are compared character by character using the ordering provided by the machine, most often the ASCII character set. One string is said to be "less than" another if it would appear before the other according to this ordering, e.g., "Canada" < "China" and 
 "Asia"< "Asian". 
 
 The pattern
 
 	$3/$2 >= 0.5
 
-selects lines where the value of the third field divided by the second is numeri- cally greater than or equal to 0.5, while
+selects lines where the value of the third field divided by the second is numerically greater than or equal to 0.5, while
 
 ==========================
 
@@ -964,8 +964,8 @@ could compare the first and fourth fields of each input line either as numbers o
 
 	Canada  3852	25    North America
 	Brazil  3286	134   South America
-	Mexico  762	78    North America
-	England 94	56    North America
+	Mexico  762	    78    North America
+	England 94	    56    Europe
 
 Only if both fields are numbers is the comparison done numerically; this would be the case with
 
