@@ -1083,9 +1083,214 @@ are called metacharacters because they have special meanings. A regular expressi
 In a regular expression, an unquoted caret ^ matches the beginning of a string, an unquoted dollar-sign $ matches the end of a string, and an unquoted period .  matches any single character. Thus,
 
 
+==============
+
+    ^C      matches a C at the beginning of a string
+    C$      matches a C at the end of a string
+    ^C$     matches the string consisting of the single character c 
+    ^.$     matches any string containing exactly one character
+    ^...$   matches any string containing exactly three characters
+    ...     matches any three consecutive characters
+    \.$     matches a period at the end of a string
+
+A regular expression consisting of a group of characters enclosed in brackets is called a character class; it matches any one of the enclosed characters. For example, [AEIOU] matches any of the characters A. E, I, O, or U.
+
+Ranges of characters can be abbreviated in a character class by using a hyphen. The character immediately to the left of the hyphen defines the beginning of the range; the character immediately to the right defines the end. Thus,[0-9] matches any digit, and [a-zA-Z][0-9] matches a letter followed by a digit. Without both a left and right operand, a hyphen in a character class denotes itself, so the character classes [+-] and [-+] match either a + or a -. The character class [A-Za-z-]+ matches words that include hyphens.
+
+A complemented character class is one in which the first character after the [ is a ^. Such a class matches any character not in the group following the caret.	Thus, [^0-9] matches any character	except a digit;	[^a-zA-Z] matches any character except an upper or lower-case letter.
+
+    ^[ABC]      matches an A, B or C at the beginning of a string
+    ^[^ABC]     matches any character at the beginning of a string. except A, B or C
+    [^ABC]      matches any character other than an A, B Or C
+    ^[^a-z]$    matches any single-character string. except a lower-case letter
+
+Inside a character class, all characters have their literal meaning, except for the quoting character \, ^ at the beginning, and - between two characters. Thus, [.] matches a period and ^[^^] matches any character except a caret at the beginning of a string.
+
+Parentheses are used in regular expressions to specify how components are grouped. There are two binary regular expression operators: alternation and concatenation. The alternation operator | is used to specify alternatives: if r1 and r2 are regular expressions, then r1 | r2 matches any string matched by r1 or by r2 .
+
+There is no explicit concatenation operator. If r1 and r2 are regular expressions, then (r1) (r2 ) (with no blank between (r1) and (r2 )) matches any string of the form xy where r1 matches x and r2 matches y. The parentheses around r1 or r2 can be omitted, if the contained regular expression does not contain the alternation operator. The regular expression
+
+(Asian|European|North American) (male|female) (black|blue)bird 
+
+matches twelve strings ranging from
+
+=====================
+
+Asian male blackbird
+
+to
+
+North American female bluebird
+
+The symbols *, +, and ? are unary operators used to specify repetitions in regular expressions. If r is a regular expression, then (r) * matches any string consisting of zero or more consecutive substrings matched by r, (r) + matches any string consisting of one or more consecutive substrings matched by r, and (r)? matches the null string or any string matched by r. If r is a basic regular expression, then the parentheses can be omitted.
+
+    B*	    matches the null string orB or BB, and so on 
+    AB*C	matches AC or ABC or ABBC, and so on 
+    AB+C	matches ABC or ABBC or ABBBC, and so on 
+    ABB*C	also matches ABC or ABBC or ABBBC, and so on 
+    AB?C	matches AC or ABC
+    [A-Z]+	matches any string of one or more upper-case letters 
+    (AB)+C	matches ABC, ABABC, ABABABC, and so on
+
+In regular expressions, the alternation operator | has the lowest precedence, then concatenation, and finally the repetition operators *, +, and ?. As in arithmetic expressions, operators of higher precedence are done before lower ones. These conventions often allow parentheses to be omitted: ab |cd is the same as (ab)|(cd), and ^ab|cd*e$ is the same as (^ab)|(c(d*)e$).
+
+To finish our discussion of regular expressions, here are some examples of useful string-matching' patterns containing regular expressions with unary and binary operators, along with a description of the kinds of input lines they match. Recall that a string-matching pattern /r/ matches the current input line if the line contains at least one substring matched by r.
+
+    /^(0-9]+$/ 
+        matches any input line that consists of only digits
+    /^(0-9][0-9](0-9]$/ 
+        exactly three digits
+    /^(\+|-)?[0-9]+\.?[0-9]*$/ 
+        a decimal number with an optional sign and optional fraction
+    /^[+-]?[0-9]+[.]?[0-9]*$/ 
+        also a decimal number with an optional sign and optional fraction
+    /^[+-]?{[0-9]+[.]?[0-9]+1[.][0-9]+)([eE][+-]?[0-9]+)?$/ 
+        a floating point number with optional sign and optional exponent
+    /^[A-Za-z][A-Za-z0-9]*$/
+        a letter followed by any letters or digits (e.g., awk variable name)
+    /^[A-Za-z]S|^[A -Za-z][0-9]$/ 
+        a letter or a letter followed by a digit (e.g., variable name in Basic)
+    /^[A-Za-z][0-9]?$/ 
+        also a letter or a letter followed by a digit
+
+Since + and . are metacharacters, they have to be preceded by backslashes in the third example to match literal occurrences. These backslashes are not
+
+=========
+
+needed within character classes, so the fourth example shows an alternate way to describe the same numbers.
+
+Any regular expression enclosed in slashes can be used as the right-hand operand of a matching operator: the program
+
+    $2 !~ /^[0-9]+$/ 
+
+prints all lines in which the second field is not a string of digits.
+
+Within regular expressions and strings, awk uses certain character sequences, called escape sequences, to specify characters for which there may be no other notation. For example, \n stands for a newline character, which cannot other- wise appear in a string or regular expression; \b stands for backspace; \t stands for tab; \007 represents the ASCII bell character; and \/ represents a slash. Escape sequences have special meaning only within an awk program; they are just characters in data. The complete list of escape sequences is shown in Table 2-2.
+
+    TABLE 2-2. EsCAPE 
+
+=================================
+
+    SEQUENCES       MEANING
+        \b          backspace
+        \f          formfeed
+        \n          newline (line feed)
+        \r          carriage return
+        \t          tab
+        \ddd        octal value ddd where ddd is 1 to 3 digits between 0 and 7
+        \c          any other character c literally (e.g., \\ for backslash, \" for ")
+
+===================================
 
 
 
+Table 2-3 summarizes regular expressions and the strings they match. The operators are listed in order of increasing precedence.
+
+        TABLE	2-3 REGULAR	EXPRESSIONS
+
+EXPRESSION      MATCHES
+
+    c               the nonmetacharacter c
+    \c              escape sequence or literal character c
+    ^               beginning of string
+    $               end of string
+    .               any character
+    [c1c2...]       any character in c1 c2 ...
+    [^C1C2...]      any character not in c1 c2 ...
+    [c1-c2]         any character in the range beginning with c1 and ending	with c2 
+    [^c1-c2]        any character not in the range c1 to c2
+    r1|r2           any string matched by r1 or r2
+    (r1)(r2)        any string xy where r1 matches x and r2 matches y
+                        parentheses not needed around arguments with no alternations
+    (r)*            zero or more consecutive strings matched by r 
+    (r)+            one or more consecutive strings matched by r
+    (r)?            zero or one string matched by r
+                        parentheses not needed around basic regular expressions    
+    (r)             any string matched by r
+
+
+Compound Patterns
+
+A compound pattern is an expression that combines other patterns, using parentheses and the logical operators || (OR), && (AND), and ! (NOT). A compound pattern matches the current input line if the expression evaluates to true. The following program uses the AND operator to select all lines in which the fourth field is Asia and the third field exceeds 500:
+
+    $4 == "Asia" && $3 > 500 
+    
+The program
+
+    $4 == "Asia" || $4 == "Europe"
+
+uses the OR operator to select lines with either Asia or Europe as the fourth field. Because the latter query is a test on string values, another way to write it
+
+=====================
+
+is to use a regular expression with the alternation operator | : 
+
+    $4 - /^(Asia|Europe)$/
+
+(Two regular expressions are equivalent if they match the same strings. Test your understanding of the precedence rules for regular expressions: Are the two regular expressions ^Asia|Europe$ and ^(Asia|Europe)$ equivalent?)
+
+If there are no occurrences of A sia or Europe in other fields, this pattern could also be written as
+
+    /Asia/ || /Europe/ 
+    
+or even
+
+    /Asia|Europe/
+
+The || operator has the lowest precedence, then &&, and finally !. The && and || operators evaluate their operands from left to right; evaluation stops as soon as truth or falsehood is determined.
+
+Range Patterns
+
+A range pattern consists of two patterns separated by a comma, as in 
+
+    pat1 ,	pat2
+
+A range pattern matches each line between an occurrence of pat1 and the next occurrence of pat2 inclusive; pat2 may match the same line as pat1, making the range a single line. As an example, the pattern
+
+    /Canada/, /USA/
+
+matches lines starting with the first line that contains Canada up through the next line that contains USA
+
+Matching begins whenever the first pattern of a range matches; if no instance of the second pattern is subsequently found, then all lines to the end of the input are matched:
+
+    /Europe/, /Africa/
+
+prints
+
+    France	211	55	Europe 
+    Japan   144 120 Asia 
+    Germany 96	61	Europe 
+    England 94	56	Europe
+
+In the next example, FNR is the number of the line just read from the current input file and FILENAME is the filename itself; both are built-in vari- ables. Thus, the program
+
+    FNR == 1, FNR == 5 { print FILENAME ": " $0 }
+
+prints the first five lines of each input file with the filename prefixed. Alter- nately, this program could be written as
+    
+    FNR <= 5 { print FILENAME ": " $O } 
+    
+A range pattern cannot be part of any other pattern.
+
+Summary of Patterns
+
+Table 2-4 summarizes the kinds of patterns that can appear in pattern-action statements.
+
+        Table 2-4  PATIERNS
+==================================
+
+   PATIERN              EXAMPLE          MATCHES
+
+    BEGIN               BEGIN               before any input has been read 
+    END                 END                 after all input has been read
+    expression          $3 < 100            lines in which third field is less than 100
+    string-matching     /Asia/              lines that contain Asia
+    compound            $3 < 1 0 0&&        lines in which third field is less than 100 and
+                        $4 == "Asia"        fourth field is Asia
+    range               NR==10, NR==20      tenth to twentieth lines of input inclusive
+
+
+======================================
 
 
 
