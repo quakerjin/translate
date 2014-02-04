@@ -1224,11 +1224,11 @@ uses the OR operator to select lines with either Asia or Europe as the fourth fi
 
 is to use a regular expression with the alternation operator | : 
 
-    $4 - /^(Asia|Europe)$/
+    $4 ~ /^(Asia|Europe)$/
 
 (Two regular expressions are equivalent if they match the same strings. Test your understanding of the precedence rules for regular expressions: Are the two regular expressions ^Asia|Europe$ and ^(Asia|Europe)$ equivalent?)
 
-If there are no occurrences of A sia or Europe in other fields, this pattern could also be written as
+If there are no occurrences of Asia or Europe in other fields, this pattern could also be written as
 
     /Asia/ || /Europe/ 
     
