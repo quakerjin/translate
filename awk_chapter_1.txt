@@ -1261,13 +1261,13 @@ prints
     Germany 96	61	Europe 
     England 94	56	Europe
 
-In the next example, FNR is the number of the line just read from the current input file and FILENAME is the filename itself; both are built-in vari- ables. Thus, the program
+In the next example, FNR is the number of the line just read from the current input file and FILENAME is the filename itself; both are built-in variables. Thus, the program
 
     FNR == 1, FNR == 5 { print FILENAME ": " $0 }
 
-prints the first five lines of each input file with the filename prefixed. Alter- nately, this program could be written as
+prints the first five lines of each input file with the filename prefixed. Alternately, this program could be written as
     
-    FNR <= 5 { print FILENAME ": " $O } 
+    FNR <= 5 { print FILENAME ": " $0 } 
     
 A range pattern cannot be part of any other pattern.
 
@@ -1275,7 +1275,7 @@ Summary of Patterns
 
 Table 2-4 summarizes the kinds of patterns that can appear in pattern-action statements.
 
-        Table 2-4  PATIERNS
+        Table 2-4  PATTERNS
 ==================================
 
    PATIERN              EXAMPLE          MATCHES
@@ -1284,7 +1284,7 @@ Table 2-4 summarizes the kinds of patterns that can appear in pattern-action sta
     END                 END                 after all input has been read
     expression          $3 < 100            lines in which third field is less than 100
     string-matching     /Asia/              lines that contain Asia
-    compound            $3 < 1 0 0&&        lines in which third field is less than 100 and
+    compound            $3 < 100&&          lines in which third field is less than 100 and
                         $4 == "Asia"        fourth field is Asia
     range               NR==10, NR==20      tenth to twentieth lines of input inclusive
 
@@ -1293,7 +1293,7 @@ Table 2-4 summarizes the kinds of patterns that can appear in pattern-action sta
 
 2.2 Actions
 
-In a pattern-action statement, the pattern determines when the action is to be executed. Sometimes an action is very simple: a single print or assignment. Other times, it may be a sequence of several statements separated by newlines or semicolons. This section begins the description of actions by discussing expressions and control-flow statements. The following sections present user- defined functions, and statements for input and output.
+In a pattern-action statement, the pattern determines when the action is to be executed. Sometimes an action is very simple: a single print or assignment. Other times, it may be a sequence of several statements separated by newlines or semicolons. This section begins the description of actions by discussing expressions and control-flow statements. The following sections present user-defined functions, and statements for input and output.
 
 ======================================
 
@@ -1321,7 +1321,7 @@ The statements in actions can include:
 
         Expressions
 
-We begin with expressions, since expressions are the simplest statements, and most other statements are made up of expressions of various kinds. An expres- sion is formed by combining primary expressions and other expressions with operators. The primary expressions are the primitive building blocks: they include constants, variables, array references, function invocations, and various built-ins, like field names.
+We begin with expressions, since expressions are the simplest statements, and most other statements are made up of expressions of various kinds. An expression is formed by combining primary expressions and other expressions with operators. The primary expressions are the primitive building blocks: they include constants, variables, array references, function invocations, and various built-ins, like field names.
 
 Our discussion of expressions starts with constants and variables. Then come the operators that can be used to combine expressions. These operators fall into five categories: arithmetic, comparison, logical, conditional, and assignment. The built-in arithmetic and string functions come next, followed at the end of the section by the description of arrays.
 Constants. There are two types of constants, string and numeric. A string constant is created by enclosing a sequence of characters in quotation marks, as
