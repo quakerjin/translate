@@ -1324,21 +1324,22 @@ The statements in actions can include:
 We begin with expressions, since expressions are the simplest statements, and most other statements are made up of expressions of various kinds. An expression is formed by combining primary expressions and other expressions with operators. The primary expressions are the primitive building blocks: they include constants, variables, array references, function invocations, and various built-ins, like field names.
 
 Our discussion of expressions starts with constants and variables. Then come the operators that can be used to combine expressions. These operators fall into five categories: arithmetic, comparison, logical, conditional, and assignment. The built-in arithmetic and string functions come next, followed at the end of the section by the description of arrays.
+
 Constants. There are two types of constants, string and numeric. A string constant is created by enclosing a sequence of characters in quotation marks, as
 
 ===============
 
-in "Asia" or 11hello, world" or "". String constants may contain the escape sequences listed in Table 2-2.
+in "Asia" or "hello, world" or "". String constants may contain the escape sequences listed in Table 2-2.
 
 A numeric constant can be an integer like 1127 , a decimal number like 3.14, or a number in scientific (exponential) notation like 0.707E-1. Different representations of the same number have the same numeric value: the numbers 1e6, 1.00E6, 10e5, 0 .1e7, and 1000000 are numerically equal. All numbers are stored in floating point, the precision of which is machine dependent.
 
-Variables. Expressions can contain several kinds of variables: user-defined, built-in, and fields. The names of user-defined variables are sequences of letters, digits, and underscores that do not begin with a digit; all built-in vari- ables have upper-case names.
+Variables. Expressions can contain several kinds of variables: user-defined, built-in, and fields. The names of user-defined variables are sequences of letters, digits, and underscores that do not begin with a digit; all built-in variables have upper-case names.
 
 A variable has a value that is a string or a number or both. Since the type of a variable is not declared, awk infers the type from context. When necessary, awk will convert a string value into a numeric one, or vice versa. For example, in
 
     $4 == "Asia" { print $1, 1000 * $2 }
 
-$2 is converted into a number if it is not one already, and $1 and $4 are con- verted into strings if they are not already.
+$2 is converted into a number if it is not one already, and $1 and $4 are converted into strings if they are not already.
 
 An uninitialized variable has the string value "" (the null string) and the numeric value 0.
 
@@ -1350,7 +1351,7 @@ Field Variables. The fields of the current input line are called $1, $2, through
 
 One can assign a new string to a field:
 
-    BEGIN                   {FS	OFS ="\t" $4}
+    BEGIN                   {FS = OFS = "\t" $4}
     $4 == "North America"   {$4	== "NA"}
     $4 == "South America"   {$4	== "SA"}
                             {print }
