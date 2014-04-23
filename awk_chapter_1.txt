@@ -1385,7 +1385,7 @@ statement in the fourth line prints the value of $0 after it has been modified b
 
 Fields can also be specified by expressions. For example, $(NF-1) is the next-to-last field of the current line. The parentheses are needed: $NF-1 is one less than the numeric value of the last field.
 
-A field variable referring to a nonexistent field, e.g., $(NF+1), has as its initial value the null string. A new field can be created by assigning a value to it. For example, the following program creates a fifth field containing the popu- lation density:
+A field variable referring to a nonexistent field, e.g., $(NF+1), has as its initial value the null string. A new field can be created by assigning a value to it. For example, the following program creates a fifth field containing the population density:
 
     BEGIN	{ FS = OFS = "\t" } 
             {$5 = 1000 * $3 / $2 ; print }
@@ -1394,7 +1394,7 @@ Any intervening fields are created when necessary and given null values.
 
 The number of fields can vary from line to line, but there is usually an implementation limit of 100 fields per line.
 
-Arithmetic Operators. Awk provides the usual +, -, *, I, %, and " arith- metic operators. The % operator computes remainders: x%y is the remainder when x is divided by y; its behavior depends on the machine if x or y is nega- tive. The " operator is exponentiation: x"y is xY. All arithmetic is done in floating point.
+Arithmetic Operators. Awk provides the usual +, -, *, /, %, and ^ arithmetic operators. The % operator computes remainders: x%y is the remainder when x is divided by y; its behavior depends on the machine if x or y is negative. The ^ operator is exponentiation: x^y is xY. All arithmetic is done in floating point.
 
 Comparison Operators. Comparison expressions are those containing either a relational operator or a regular expression matching operator. The relational
 
@@ -1406,13 +1406,13 @@ Comparison Operators. Comparison expressions are those containing either a relat
 1. The primary expressions are: 
     numeric and string constants, variables, fields, function calls, array elements.
 2. These operators combine expressions: 
-    assignment operators = += -= *= I= %= "'= 
+    assignment operators = += -= *= /= %= ^= 
     conditional expression operator ? : 
-    logical operators I I (OR), && (AND), I (NOT) 
-    matching operators - and I - 
-    relational operators < <= == I= > >= 
+    logical operators ||(OR), && (AND), !(NOT) 
+    matching operators ~ and !~ 
+    relational operators < <= == != > >= 
     concatenation (no explicit operator) 
-    arithmetic operators + - * 1 % "' 
+    arithmetic operators + - * / % ^ 
     unary +and - 
     increment and decrement operators ++and -- (prefix and postfix) 
     parentheses for grouping
