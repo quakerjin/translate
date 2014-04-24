@@ -1427,9 +1427,9 @@ Similarly, the value of a matching expression is 1 if true, 0 if false, so
 
 is 1 if the fourth field of the current line contains Asia as a substring, or 0 if it does not.
 
-Logical Operators. The logical operators && (AND), II (OR), and I (NOT) are used to create logical expressions by combining other expressions. A logical expression has the value l if it is true and 0 if false. In the evaluation of a logi- cal operator, an operand with a nonzero or nonnull value is treated as true; other values are treated as false. The operands of expressions separated by && or II are evaluated from left to right, and evaluation ceases as soon as the value of the complete expression can be determined. This means that in
+Logical Operators. The logical operators && (AND), || (OR), and ! (NOT) are used to create logical expressions by combining other expressions. A logical expression has the value l if it is true and 0 if false. In the evaluation of a logical operator, an operand with a nonzero or nonnull value is treated as true; other values are treated as false. The operands of expressions separated by && or || are evaluated from left to right, and evaluation ceases as soon as the value of the complete expression can be determined. This means that in
 
-    expr 1	&.&.	expr 2 
+    expr 1	&&	expr 2 
 
 expr2 is not evaluated if expr1 is false, while in
 
@@ -1437,7 +1437,7 @@ expr2 is not evaluated if expr1 is false, while in
     
 expr4 is not evaluated if expr3 is true.
 
-Newlines may be inserted after the && and I I operators. 
+Newlines may be inserted after the && and || operators. 
 
 Conditional Expressions. A conditional expression has the form
 
