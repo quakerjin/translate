@@ -1450,7 +1450,7 @@ First, expr 1 is evaluated. If it is true, that is, nonzero or nonnull, the valu
 
 the conditional expression is the value of expr2; otherwise, it is the value of expr3 •	Only one of expr2 and expr3 is evaluated.
 
-The following program uses a conditional expression to print the reciprocal of $ 1, or a warning if $ 1 is zero:
+The following program uses a conditional expression to print the reciprocal of $1, or a warning if $ 1 is zero:
     
     { print ($1 != 0 ? 1/$1 : "$1 is zero, line " NR) }
 
@@ -1460,7 +1460,7 @@ Assignment Operators. There are seven assignment operators that can be used in e
 
 where var is a variable or field name, and expr is any expression. For example,to compute the total population and number of Asian countries, we could write
 
-    $4 == "Asia" { pop =pop + $3; n == n + 1 } 
+    $4 == "Asia" { pop =pop + $3; n = n + 1 } 
     END	         { print "Total population of the", n,
                     "Asian countries is", pop, "million."
                  }
@@ -1479,7 +1479,7 @@ We also use default initialization to advantage in the following program, which 
                 }
 Note, however, that this program is correct only when at least one value of $3 is positive.
 
-The other six assignment operators are +=, -=, *=, 1=, %=, and "=. Their meanings are similar: v op= e has the same effect as v = v ope, except that v is evaluated only once. The assignment
+The other six assignment operators are +=, -=, *=, !=, %=, and ^=. Their meanings are similar: v op= e has the same effect as v = v op e, except that v is evaluated only once. The assignment
 
     pop =pop + $3 
 
@@ -1491,7 +1491,7 @@ This statement has the same effect as the longer version -	the variable on the l
 
 ===============================
 
-    { $2 /; 1000; print }
+    { $2 /= 1000; print }
 
 divides the second field by 1000, then prints the line. An assignment is an expression; its value is the new value of the left side.
 
@@ -1506,16 +1506,16 @@ both the field separator and the output field separator are set to tab. Assignme
 
         n = n+1
 
-is usually written ++n or n++ using the unary increment operator ++, which adds 1 to a variable. The prefix form ++n increments n before delivering its value; the postfix form n++ increments n after delivering its value. This makes a difference when ++ is used in an assignment. If n is initially 1, then the assignment i =++n.increments n and assigns the new value 2 to i, while the assignment i = n++ increments n but assigns the old value 1 to i. To just increment n, however, there's no difference between n++ and ++n. The prefix and postfix decrement operator --, which subtracts 1 from a variable, works the same way.
+is usually written ++n or n++ using the unary increment operator ++, which adds 1 to a variable. The prefix form ++n increments n before delivering its value; the postfix form n++ increments n after delivering its value. This makes a difference when ++ is used in an assignment. If n is initially 1, then the assignment i =++n increments n and assigns the new value 2 to i, while the assignment i = n++ increments n but assigns the old value 1 to i. To just increment n, however, there's no difference between n++ and ++n. The prefix and postfix decrement operator --, which subtracts 1 from a variable, works the same way.
 
-Built-In Arithmetic Functions. The built-in arithmetic functions are shown in Table 2-6. These functions can be used as primary expressions in all expres- sions. In the table, x and y are arbitrary expressions.
+Built-In Arithmetic Functions. The built-in arithmetic functions are shown in Table 2-6. These functions can be used as primary expressions in all expressions. In the table, x and y are arbitrary expressions.
 
 TABLE 2-6. BUILT-IN ARITHMETIC FUNCTIONS
 
 =========================================
     FUNCTION    VALUE RETURNED
 
-    atan2(y,x)  arctangent of ylx in the range pai(3.14) to pai 
+    atan2(y,x)  arctangent of y/x in the range -pai(-3.14) to pai(3.14) 
     cos(x)      cosine of x,with x in radians
     exp(x)      exponential function of x,ex
     int(x)      integer part of x; truncated towards 0 when x > 0
@@ -1525,7 +1525,7 @@ TABLE 2-6. BUILT-IN ARITHMETIC FUNCTIONS
     sqrt(x)     square root of x
     srand(x)    x is new seed for rand()
 
-Useful constants can be computed with these functions: atan2 (0,-1) gives pai and exp(1) gives e, the base of the natural logarithms. To compute the base-10 logarithm of x, use log(x) / log(10).
+Useful constants can be computed with these functions: atan2(0,-1) gives pai and exp(1) gives e, the base of the natural logarithms. To compute the base-10 logarithm of x, use log(x) / log(10).
 
 ===========================
 
