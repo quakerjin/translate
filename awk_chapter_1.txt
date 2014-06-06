@@ -1727,12 +1727,311 @@ Let us examine what this rule means for a comparison like
 
     $1 == $2
 
-that involves fields. Here, the type of the comparison depends on whether the fields contain numbers or strings, and this can only be determined when the pro- gram runs; the type of the comparison may differ from input line to input line. When awk creates a field at run time, it automatically sets its type to string; in addition, if the field contains a machine-representable number, it also gives the field a numeric type.
+that involves fields. Here, the type of the comparison depends on whether the fields contain numbers or strings, and this can only be determined when the program runs; the type of the comparison may differ from input line to input line. When awk creates a field at run time, it automatically sets its type to string; in addition, if the field contains a machine-representable number, it also gives the field a numeric type.
 
 For example, the comparison $1 == $2 will be numeric and succeed if $1 and $2 have any of the values
 
 ==================================
 
+    1   1.0     +1   1e0    0.1e+1  10E-1 001
+
+because all these values are different representations of the number 1. However, this same expression will be a string comparison and hence fail on each of these pairs:
+
+    0    (null)
+    0.0  (null) 
+    0     0a
+    1e500 1.0e500
+
+In the first three pairs, the second field is not a number. The last pair will be compared as strings on machines where the values are too large to be represented as numbers.
+
+The print statement 
+
+    print $1
+
+prints the string value of the first field; thus, the output is identical to the input. 
+
+Uninitialized variables are created with the numeric value 0 and the string value "". Nonexistent fields and fields that are explicitly null have only the string value ""; they are not numeric, but when coerced to numbers they acquire the numeric value 0. As we will see at the end of this section, array subscripts are strings.
+
+
+There are two idioms for coercing an expression of one type to the other:
+
+    number ""   concatenate a null string to number to coerce it to a string 
+    string + 0  add zero to string to coerce it to a number
+
+Thus, to force a string comparison between two fields, coerce one field to string: 
+
+    $1 "" == $2
+
+To force a numeric comparison, coerce both fields to numeric: 
+
+    $1 + 0 == $2 + 0
+
+This works regardless of what the fields contain.
+
+The numeric value of a string is the value of the longest prefix of the string
+that looks numeric. Thus
+
+    BEGIN { print "1E2"+0, "12E"+0, "E12"+0, "1X2Y3"+0 }
+
+yields
+
+    100 12 0 1
+
+The string value of a number is computed by formatting the number with the output format conversion OFMT. OFMT also controls the conversion of numeric values to strings for concatenation, comparison, and creation of array subscripts. The default value of OFMT is "%.6g". Thus
+
+    BEGIN { print 1E2 "", 12E-2 "", E12 "", 1.23456789 "" } 
+    
+gives
+
+============================================
+
+    100 0.12 1.23457
+
+The default value of OFMT can be changed by assigning it a new value. If OFMT were changed to "%·2f", for example, numbers would be printed, and coerced numbers would be compared, with two digits after the decimal point.
+
+    TABLE 2-8. EXPRESSION OPERATORS
+
+===========================================
+
+OPERATION               OPERATORS       EXAMPLE        MEANING OF EXAMPLE 
+
+assignment              = += -= *=      x *=2          x = x*2
+                        /= %= ^=
+conditional             ?:              x?y:z          if x is true then y else z 
+logical OR              ||              x || y         1 if x or y is true, 
+                                                       0 otherwise
+ 
+logical AND             &&              x && y         1 if x and y are true, 
+                                                       0 otherwise  
+array membership        in              i in a         1 if a [ i ] exists, 0 otherwise
+matching                ~ !~            $1 ~ /x/       l if the first field contains an x,
+                                                       0 otherwise
+relational              < <= == !=      X == y         1 if x is equal to y,
+                        >= >                           0 otherwise
+concatenation                           "a" "bc"       "abc"; there is no explicit
+                                                       concatenation operator
+add, subtract           + -             x + y          sum of x and y 
+multiply, divide, mod   * / %           x % y          remainder of x divided by y
+unary plus and minus    + -             -x             negated value of x 
+logical NOT             !               !$1            1 if $1 is zero or null, 
+                                                       0 otherwise
+exponentiation          ^               x ^ y          x的y次方    
+increment, decrement    ++ --           ++x x++        add 1to x
+field                   $               $i+1           value of i-th field, plus 1 
+grouping                ( )             ($i)++         add 1 to value of i-th field
+
+
+Summary of Operators. The operators that can appear in expressions are summarized in Table 2-8. Expressions can be created by applying these operators to constants, variables, field names, array elements, functions, and other expressions.
+
+The operators are listed in order of increasing precedence. Operators of higher precedence are evaluated before lower ones; this means, for example, that * is evaluated before + in an expression. All operators are left associative except the assignment operators, the conditional operator, and exponentiation, which are right associative. Left associativity means that operators of the same precedence are evaluated left to right; thus 3-2-1 is (3-2)-1, not 3-(2-1 ).
+
+
+============================================
+
+Since there is no explicit operator for concatenation, it is wise to parenthesize expressions involving other operators in concatenations. Consider the program
+
+    $1 < 0 { print "abs($1) = " -$1 }
+
+The expression following print seems to use concatenation, but is actually a
+subtraction. The programs
+
+    $1 < 0 { print "abs($1) = " ( -$1) } 
+and
+
+    $1 < 0 { print "abs($1) =" ,-$1 }
+
+both do what was intended.
+
+Control-Flow Statements
+
+Awk provides braces for grouping statements, an if - else statement for decision-making, and while, for, and do statements for looping. All of these statements were adopted from C.
+
+A single statement can always be replaced by a list of statements enclosed in braces. The statements in the list are separated by newlines or semicolons. Newlines may be put after any left brace and before any right brace.
+
+The if-else statement has the form
+
+    if (expression )
+        statement 1 
+    else
+        statement 2
+
+The else statement 2 is optional. Newlines are optional after the right parenthesis, after statement1, and after the keyword else. If else appears on the same line as statement 1, then a semicolon must terminate statement 1 if it is a single statement.
+
+In an if - else statement, the test expression is evaluated first. If it is true, that is, either nonzero or nonnull, statement 1 is executed. If expression is false, that is, either zero or null, and else statement2 is present, then statement2 is executed.
+
+To eliminate any ambiguity, we adopt the rule that each else is associated
+with the closest previous unassociated if . For example, the else in the statement
+
+    if (e1) if (e2) s=1; else s=2
+
+is associated with the second if . (The semicolon after s = 1 is required, since the else appears on the same line.)
+
+The while statement repeatedly executes a statement while a condition is true:
+
+
+============================================
+
+===  Control-Flow Statements  ===
+
+    { statements } 
+        statement grouping
+    if (expression) statement
+        if expression is true, execute statement
+    if (expression) statement 1 else statement 2
+        if expression is true, execute statement 1 otherwise execute statement 2
+    while (expression) statement
+        if expression is true, execute statement, then repeat
+    for (expression1 ; expression2 ; expression3 ) statement
+        equivalent to expression 1 ; while (expression 2 ) { statement; expression 3 }
+    for (variable in array) statement
+        execute statement with variable set to each subscript in array in turn
+    do statement while (expression)
+        execute statement; if expression is true, repeat
+    break
+        immediately leave innermost enclosing while, for or do
+    continue
+        start next iteration of innermost enclosing while, for or do
+    next
+        start next iteration of main input loop
+    exit
+    exit expression
+        go immediately to the END action; if within the END action, exit program entirely. 
+        Return expression as program status.
+
+
+============================================
+
+    while (expression) 
+        statement
+
+Newlines are optional after the right parenthesis. In this loop, expression is evaluated; if it is true, statement is executed and expression is tested again. The cycle repeats as long as expression is true. For example, this program prints all input fields, one per line:
+
+    {   i=1
+        while (i <= NF) {
+            print $i 
+            i++
+        }
+     }
+
+The loop stops when i reaches NF+ 1, and that is its value after the loop exits. 
+
+The for statement is a more general form of while:
+
+============================================
+
+    for (expression 1 ; expression 2 ; expression 3 )
+        statement
+
+Newlines are optional after the right parenthesis. The for statement has the same effect as
+
+    expression 1
+    while (expression2 ) {
+        statement
+        expression 3 
+    }
+so
+    for (i = 1; i <= NF; i++) 
+        print $i
+
+does the same loop over the fields as the while example above. In the for statement, all three expressions are optional. If expression 2 is missing, the condition is taken to be always true, so for ( ; ; ) is an infinite loop.
+
+An alternate version of the for statement that loops over array subscripts is described in the section on arrays.
+
+The do statement has the form
+
+    do
+    statement
+    while (expression)
+
+Newlines are optional after the keyword do and after statement. If while appears on the same line as statement, then statement must be terminated by a semicolon if it is a single statement. The do loop executes statement once, then repeats statement as long as expression is true. It differs from the while and for in a critical way: its test for completion is at the bottom instead of the top, so it always goes through the loop at least once.
+
+There are two statements for modifying how loops cycle: break and continue. The break statement causes an exit from the immediately enclosing while or for or do. The continue statement causes the next iteration to begin; it causes execution to go to the test expression in the while and do, and to expression3 in the for statement.
+
+The next and exit statements control the outer loop that reads the input lines in an awk program. The next statement causes awk to fetch the next input line and begin matching patterns starting from the first pattern-action statement. In an END action, the exit statement causes the program to terminate. In any other action, it causes the program to behave as if the end of the input had occurred; no more input is read, and the END actions, if any, are executed.
+
+If an exit statement contains an expression
+
+============================================
+
+    exit expr
+
+it causes awk to return the value of expr as its exit status unless overridden by a subsequent error or exit. If there is no expr, the exit status is zero. In some operating systems, including Unix, the exit status may be tested by the program that invoked awk.
+
+Empty Statement
+
+A semicolon by itself denotes the empty statement. In the following program, the body of the for loop is an empty statement.
+
+    BEGIN {FS = "\t" }
+          {  for (i = 1; i <= NF && $i != ""; i++)
+                 ;
+             if (i <= NF)
+                print
+          }
+
+The program prints all lines that contain an empty field.
+
+Arrays
+
+Awk provides one-dimensional arrays for storing strings and numbers. Arrays and array elements need not be declared, nor is there any need to specify how many elements an array has. Like variables, array elements spring into existence by being mentioned; at birth, they have the numeric value 0 and the string value " ".
+
+As a simple example, the statement 
+
+    x[NR] = $0
+
+assigns the current input line to element NR of the array x. In fact, it is easy (though perhaps slow) to read the entire input into an array, then process it in any convenient order. For example, this variant of the program from Section 1.7 prints its input in reverse line order: 
+
+        { x[NR] =$0 }
+    END { for (i =NR; i > 0; i--) print x[i] }
+
+The first action merely records each input line in the array x, using the line number as a subscript; the real work is done in the END statement.
+
+The characteristic that sets awk arrays apart from those in most other languages is that subscripts are strings. This gives awk a capability like the associative memory of SNOBOL4 tables, and for this reason, arrays in awk are called associative arrays.
+
+The following program accumulates the populations of Asia and Europe in the array pop. The END action prints the total populations of these two continents.
+
+
+============================================
+
+    /Asia/       {pop["Asia"] += $3 }
+    /Europe/     {pop["Europe"] += $3 }  
+    END          {print "Asian population is",
+                  pop["Asia"], "million."
+                  print "European population is",
+                  pop["Europe"], "million."
+                  }
+
+On countries, this program generates
+
+    Asian population is 2173 million. 
+    European population is 172 million.
+
+Note that the subscripts are the string constants "Asia" and "Europe". If we had written pop[Asia] instead of pop["Asia"], the expression would have used the value of the variable A sia as the subscript, and since the variable is uninitialized, the values would have been accumulated in pop [""] .
+
+This example doesn't really need an associative array since there are only two elements, both named explicitly. Suppose instead that our task is to determine the total population for each continent. Associative arrays are ideally suited for this kind of aggregation. Any expression can be used as a subscript in an array reference, so
+
+    pop[$4] += $3
+
+uses the string in the fourth field of the current input line to index the array
+pop and in that entry accumulates the value of the third field:
+
+    BEGIN   {FS ="'t" } 
+            {pop[S4] += $3 }
+    END     {for (name in pop)
+                print name, pop[name]
+            }
+
+The subscripts of the array pop are the continent names; the values are the accumulated populations. This code works regardless of the number of con- tinents; the output from the countries file is
+
+    North America 340 
+    South America 134 
+    Asia 2173
+    Europe 172
+
+The last program used a form of the for statement that loops over all subscripts of an array:
+
+    for (variable in array) statement
+
+This loop executes statement with variable set in turn to each different subscript in the array. The order in which the subscripts are considered is implementa- tion dependent. Results are unpredictable if new elements are added to the array by statement.
 
 
 
