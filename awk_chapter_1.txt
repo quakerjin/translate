@@ -2005,7 +2005,7 @@ On countries, this program generates
     Asian population is 2173 million. 
     European population is 172 million.
 
-Note that the subscripts are the string constants "Asia" and "Europe". If we had written pop[Asia] instead of pop["Asia"], the expression would have used the value of the variable A sia as the subscript, and since the variable is uninitialized, the values would have been accumulated in pop [""] .
+Note that the subscripts are the string constants "Asia" and "Europe". If we had written pop[Asia] instead of pop["Asia"], the expression would have used the value of the variable Asia as the subscript, and since the variable is uninitialized, the values would have been accumulated in pop [""] .
 
 This example doesn't really need an associative array since there are only two elements, both named explicitly. Suppose instead that our task is to determine the total population for each continent. Associative arrays are ideally suited for this kind of aggregation. Any expression can be used as a subscript in an array reference, so
 
@@ -2014,13 +2014,13 @@ This example doesn't really need an associative array since there are only two e
 uses the string in the fourth field of the current input line to index the array
 pop and in that entry accumulates the value of the third field:
 
-    BEGIN   {FS ="'t" } 
-            {pop[S4] += $3 }
+    BEGIN   {FS ="\t" } 
+            {pop[$4] += $3 }
     END     {for (name in pop)
                 print name, pop[name]
             }
 
-The subscripts of the array pop are the continent names; the values are the accumulated populations. This code works regardless of the number of con- tinents; the output from the countries file is
+The subscripts of the array pop are the continent names; the values are the accumulated populations. This code works regardless of the number of continents; the output from the countries file is
 
     North America 340 
     South America 134 
@@ -2031,7 +2031,97 @@ The last program used a form of the for statement that loops over all subscripts
 
     for (variable in array) statement
 
-This loop executes statement with variable set in turn to each different subscript in the array. The order in which the subscripts are considered is implementa- tion dependent. Results are unpredictable if new elements are added to the array by statement.
+This loop executes statement with variable set in turn to each different subscript in the array. The order in which the subscripts are considered is implementation dependent. Results are unpredictable if new elements are added to the array by statement.
+
+============================================
 
 
+You can determine whether a particular subscript occurs in an array with the expression
+
+    subscript in A
+
+This expression has the value 1 if A [subscript] already exists, and 0 otherwise.
+Thus, to test whether Africa is a subscript of the array pop you can say
+
+    if ("Africa" in pop) ...
+
+This condition performs the test without the side effect of creating pop[ "Africa"], which would happen if you used
+
+    if (pop["Africa"] I="") ...
+
+Note that neither is a test of whether the array pop contains an element with value "Africa".
+
+The delete Statement. 
+
+An array element may be deleted with 
+
+    delete array[subscript]
+
+For example, this loop removes all the elements from the array pop:
+
+    for (i in pop) 
+        delete pop[i]
+
+The split Function. 
+
+The function split(str,arr,Js) splits the string value of str into fields and stores them in the array arr. The number of fields produced is returned as the value of s p l i t . The string value of the third argument, fs, determines the field separator. If there is no third argument, FS is used. In either case, the rules are as for input field splitting, which is discussed in Section 2.5. The function
+
+    split("7/4/76", arr, "/")
+
+splits the string 7/4/76 into three fields using I as the separator; it stores 7 in arr["1"],4inarr["2"],and 76 in arr["3"].
+
+Strings are versatile array subscripts, but the behavior of numeric subscripts as strings may sometimes appear counterintuitive. Since the string values of 1 and "1" are the same, arr[1] is the same as arr["1"] .  But notice that 01 is not the same string as 1 and the string 10 comes before the string 2.
+
+Multidimensional Arrays.
+
+Awk does not support multidimensional arrays directly but it provides a simulation using one-dimensional arrays. Although you can write multidimensional subscripts like i, j or s,p,q,r, awk concaten- ates the components of the subscripts (with a separator between them) to syn- thesize a single subscript out of the multiple subscripts you write. For example,
+
+    for (i = 1; i <= 10; i++)
+        for (j = 1; j <= 10; j++)
+            arr[i, j] = 0
+
+
+============================================
+
+
+creates an array of 100 elements whose subscripts appear to have the form 1 , 1, 1 , 2, and so on. Internally, however, these subscripts are stored as strings of the form 1 SUBSEP 1, 1 SUBSEP 2, and so on. The built-in variable SUBSEP contains the value of the subscript-component separator; its default value is not a comma but "\034" , a value that is unlikely to appear in normal text.
+
+The test for array membership with multidimensional subscripts uses a parenthesized list of subscripts, such as 
+
+    if ((i,j) in arr) ...
+
+To loop over such an array, however, you would write 
+
+    for (k in arr) ...
+
+and use split (k,x,SUBSEP) if access to the individual subscript components is needed.
+
+    Array elements cannot themselves be arrays.
+
+2.3 User-Defined Functions
+
+In addition to built-in functions, an awk program can contain user-defined
+functions. Such a function is defined by a statement.of the form 
+
+    function name(parameter-list ) {
+        statements
+    }
+
+A function definition can occur anywhere a pattern-action statement can. Thus, the general form of an awk program is a sequence of pattern-action statements and function definitions separated by newlines or semicolons.
+
+In a function definition, newlines are optional after the left brace and before the right brace of the function body. The parameter list is a sequence of variable names separated by commas; within the body of the function these variables refer to the arguments with which the function was called.
+
+The body of a function definition may contain a return statement that returns control and perhaps a value to the caller. It has the form
+
+    return expression
+
+The expression is optional, and so is the return statement itself, but the returned value is undefined if none is provided or if the last statement executed is not a return.
+
+For example, this function computes the maximum of its arguments: 
+
+    function max(m, n) {
+        returnm> n ? m: n
+    }
+
+The variables m and n belong to the function max; they are unrelated to any
 

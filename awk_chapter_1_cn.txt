@@ -1892,16 +1892,45 @@ awk 提供一维数组来存储字符串和数字。数组和数组元素不需�
 
 下面的程序，在数组pop中，累计了亚洲和欧洲的人口。END 行为输出了这两个大洲的总人口数。
 
+    /Asia/       {pop["Asia"] += $3 }
+    /Europe/     {pop["Europe"] += $3 }  
+    END          {print "Asian population is",
+                  pop["Asia"], "million."
+                  print "European population is",
+                  pop["Europe"], "million."
+                  }
 
+把这个程序对countries 文件运行，结果如下：
 
+    Asian population is 2173 million. 
+    European population is 172 million.
 
+注意，数组下标是字符串常量 "Asia" 和 "Europe" 。如果我们写成 pop[Asia] 来代替 pop["Asia"], 表达式将使用变量 Asia 来作为数组下标，而变量Asia并没有初始化，其值转换到数组上就是 pop[""] 。
 
+这个例子不是真的需要组合数组，因为这里只有两个元素，两个的名字都很清楚。假设把我们的任务替换为测定每个大洲的总人口。组合数组可以完美的适用这种集合。任何表达式都可以在数组参照里，作为数组下标，所以，
 
+    pop[$4] += $3
 
+使用当前输入行的，第四个字段的字符串值，作为pop数组的索引，它累加了第三个字段的值：
 
+    BEGIN   {FS ="\t" } 
+            {pop[$4] += $3 }
+    END     {for (name in pop)
+                print name, pop[name]
+            }
 
+数组pop的下标是大洲的名字；它的值是每个洲人口的累加。这段代码运行起来和洲的名字无关；从 countries 文件得到的输出是：
 
+    North America 340 
+    South America 134 
+    Asia 2173
+    Europe 172
 
+最后一个程序是用 for 语句的形式来遍历一个数组全部的下标：
+
+    for (变量 in 数组) 语句
+
+这个循环中，随着变量被依次设为不同的数组下标所代表的值，后面的语句被一次次执行。下标被调用的顺序依赖于相互间的关系，如果通过后面的语句，有新的元素被添加到数组中， 结果是不可预知的。
 
 
 
