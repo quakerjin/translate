@@ -2040,14 +2040,14 @@ You can determine whether a particular subscript occurs in an array with the exp
 
     subscript in A
 
-This expression has the value 1 if A [subscript] already exists, and 0 otherwise.
+This expression has the value 1 if A[subscript] already exists, and 0 otherwise.
 Thus, to test whether Africa is a subscript of the array pop you can say
 
     if ("Africa" in pop) ...
 
 This condition performs the test without the side effect of creating pop[ "Africa"], which would happen if you used
 
-    if (pop["Africa"] I="") ...
+    if (pop["Africa"] !="") ...
 
 Note that neither is a test of whether the array pop contains an element with value "Africa".
 
@@ -2064,17 +2064,17 @@ For example, this loop removes all the elements from the array pop:
 
 The split Function. 
 
-The function split(str,arr,Js) splits the string value of str into fields and stores them in the array arr. The number of fields produced is returned as the value of s p l i t . The string value of the third argument, fs, determines the field separator. If there is no third argument, FS is used. In either case, the rules are as for input field splitting, which is discussed in Section 2.5. The function
+The function split(str,arr,fs) splits the string value of str into fields and stores them in the array arr. The number of fields produced is returned as the value of split . The string value of the third argument, fs, determines the field separator. If there is no third argument, FS is used. In either case, the rules are as for input field splitting, which is discussed in Section 2.5. The function
 
     split("7/4/76", arr, "/")
 
-splits the string 7/4/76 into three fields using I as the separator; it stores 7 in arr["1"],4inarr["2"],and 76 in arr["3"].
+splits the string 7/4/76 into three fields using / as the separator; it stores 7 in arr["1"],4 in arr["2"],and 76 in arr["3"].
 
 Strings are versatile array subscripts, but the behavior of numeric subscripts as strings may sometimes appear counterintuitive. Since the string values of 1 and "1" are the same, arr[1] is the same as arr["1"] .  But notice that 01 is not the same string as 1 and the string 10 comes before the string 2.
 
 Multidimensional Arrays.
 
-Awk does not support multidimensional arrays directly but it provides a simulation using one-dimensional arrays. Although you can write multidimensional subscripts like i, j or s,p,q,r, awk concaten- ates the components of the subscripts (with a separator between them) to syn- thesize a single subscript out of the multiple subscripts you write. For example,
+Awk does not support multidimensional arrays directly but it provides a simulation using one-dimensional arrays. Although you can write multidimensional subscripts like i, j or s,p,q,r, awk concatenates the components of the subscripts (with a separator between them) to synthesize a single subscript out of the multiple subscripts you write. For example,
 
     for (i = 1; i <= 10; i++)
         for (j = 1; j <= 10; j++)
@@ -2101,7 +2101,7 @@ and use split (k,x,SUBSEP) if access to the individual subscript components is n
 2.3 User-Defined Functions
 
 In addition to built-in functions, an awk program can contain user-defined
-functions. Such a function is defined by a statement.of the form 
+functions. Such a function is defined by a statement of the form 
 
     function name(parameter-list ) {
         statements
@@ -2120,8 +2120,435 @@ The expression is optional, and so is the return statement itself, but the retur
 For example, this function computes the maximum of its arguments: 
 
     function max(m, n) {
-        returnm> n ? m: n
+        return m > n ? m: n
     }
 
 The variables m and n belong to the function max; they are unrelated to any
+
+============================================
+
+other variables of the same names elsewhere in the program.
+
+A user-defined function can be used in any expression in any pattern-action
+statement or the body of any function definition. Each use is a call of the function. If a user-defined function is called in the body of its own definition, that function is said to be recursive.
+
+For example, the max function might be called like this:
+
+    { print max(S1,max(S2,S3)) } # print maximum of $1, $2, $3
+
+    function max(m, n)  { 
+        return m > n ? m : n
+    }
+
+There cannot be any blanks between the function name and the left parenthesis of the argument list when the function is called.
+
+When a function is called with an argument like $1, which is just an ordinary variable, the function is given a copy of the value of the variable, so the function manipulates the copy, not the variable itself. This means that the function cannot affect the value of the variable outside the function. (The jargon is that such variables, called "scalars," are passed "by value.") Arrays are not copied, however, so it is possible for the function to alter array elements or create new ones. (This is called passing "by reference.") The name of a function may not be used as a parameter.
+
+To repeat, within a function definition, the parameters are local variables - they last only as long as the function is executing, and they are unrelated to variables of the same name elsewhere in the program. But all other variables are global; if a variable is not named in the parameter list, it is visible and accessible throughout the program.
+
+This means that the way to provide local variables for the private use of a function is to include them at the end of the parameter list in the function definition. Any variable in the parameter list for which no actual parameter is supplied in a call is a local variable, with null initial value. This is not a very elegant language design but it at least provides the necessary facility. We put several blanks between the arguments and the local variables so they can be distinguished.
+
+2.4 Output
+
+The print and printf statements generate output. The print statement is used for simple output; printf is used when careful formatting is required. Output from print and printf can be directed into files and pipes as well as to the terminal. These statements can be used in any mixture; the output comes out in the order in which it is generated.
+
+============================================
+
+============================================
+
+    Output Statements
+
+print
+    print $0 on standard output
+print expression, expression, ...
+    print expression's, separated by OFS, terminated by ORS
+print expression, expression, ... >filename
+    print on file filename instead of standard output
+print expression, expression, ... >>filename
+    append to file filename instead of overwriting previous contents
+print expression, expression, ... | command 
+    print to standard input of command
+printf(format, expression, expression, ...)
+printf(format, expression, expression, ... ) >filename 
+printf(format , expression, expression, ... ) >>filename 
+printf(format, expression, expression, ... ) | command
+    printf statements are like print but the first argument specifies output format 
+close (filename) , close (command)
+    break connection between print and filename or command 
+system(command)
+    execute command; value is status return of command
+
+The argument list of a printf statement does not need to be enclosed in parentheses. But if an expression in the argument list of a print or printf statement contains a relational operator, either the expression or the argument list must be enclosed in parentheses. Pipes and system may not be available on non-Unix systems.
+
+============================================
+
+The print Statement
+
+The print statement has two forms:
+
+    print expr1 , expr2 , ... , exprn 
+    print(expr1 , expr2 , ••• , exprn)
+
+Both forms print the string value of each expression separated by the output field separator followed by the output record separator. The statement
+
+    print
+
+is an abbreviation for
+
+    print $0
+
+To print a blank line. that is, a line with only a newline, use 
+
+    print ""
+
+The second form of the print statement encloses the argument list in parentheses, as in
+
+
+============================================
+
+    print($1 ":", $2)
+
+Both forms of the print statement generate the same output but, as we will see, parentheses are necessary for arguments containing relational operators.
+
+Output Separators
+
+The output field separator and output record separator are stored in the built-in variables OFS and ORS. Initially, OFS is set to a single blank and ORS to a single newline, but these values can be changed at any time. For example, the following program prints the first and second fields of each line with a colon between the fields and two newlines after the second field:
+
+    BEGIN { OFS =":"; ORS ="\n\n" } 
+    { print $1, $2 }
+
+By contrast,
+
+    { print $1 $2 }
+
+prints the first and second fields with no intervening output field separator, because $1 $2 is a string consisting of the concatenation of the two fields.
+
+The printf Statement
+
+The printf statement is used to generate formatted output. It is similar to that in C except that the * format specifier is not supported. Like print , it has both an unparenthesized and parenthesized form:
+
+    printf format, expr1 , expr2 , ... , exprn 
+    printf (format, expr1 , expr2 , ••• , exprn)
+
+The format argument is always required; it is an expression whose string value contains both literal text to be printed and specifications of how the expressions in the argument list are to be formatted, as in Table 2-9. Each specification begins with a %, ends with a character that determines the conversion, and may include three modifiers:
+
+    -       left-justify expression in its field
+    width   pad field to this width as needed; leading 0 pads with zeros
+    .prec   maximum string width. or digits to right of decimal point
+
+Table 2-10 contains some examples of specifications, data, and the corresponding output. Output produced by printf does not contain any newlines unless you put them in explicitly.
+
+Output Into Files
+
+The redirection operators > and >> are used to put output into files instead of the standard output. The following program will put the first and third fields of all input lines into two files: bigpop if the third field is greater than 100,
+
+
+============================================
+
+        TABLE 2-9. PRINTF FORMAT-CONTROL CHARACTERS
+=========================================================
+
+    CHARACTER       PRINT EXPRESSION As
+
+    c               ASCII character 
+    d               decimal integer  
+    e               [-]d.ddddddE[+-]dd     
+    f               [-]ddd.dddddd    
+    g               e or f conversion, whichever is shorter, with
+                    nonsignificant zeros suppressed    
+    o               unsigned octal number        
+    s               string
+    x               unsigned hexadecimal number        
+    %               print a %; no argument is consumed        
+=========================================================
+
+        TABLE 2-10. EXAMPLES OF PRINTF SPECIFICATIONS
+=========================================================
+        fmt         $1          printf("fmt", $1)
+
+        %c          97           a        
+        %d          97.5         97       
+        %5d         97.5             97    
+        %e          97.5         9.750000e+01   
+        %f          97.5         97.500000   
+        %7.2f       97.5            97.50    
+        %g          97.5         97.5    
+        %.6g        97.5         97.5    
+        %o          97           141
+        %06o        97           000141
+        %x          97           61
+        |%s|        January      |January|   
+        |%10s|      January      |   January|
+        |%-10s|     January      |January   |    
+        |%.3s|      January      |Jan|    
+        |%10.3s|    January      |       Jan|   
+        |%-10.3s|   January      |Jan       |
+        %%          January      %
+
+============================================
+
+and smallpop otherwise:
+
+    $3 > 100  { print S1, $3 >"bigpop" } 
+    $3 <= 100 { print $1, $3 >"smallpop" }
+
+Notice that the filenames have to be quoted; without quotes, bigpop and
+
+
+============================================
+
+smallpop are merely uninitialized variables. 
+
+Filenames can be variables or expressions as well:
+
+    { print($1, $3) > ($3 > 100 ? "bigpop" : "smallpop") } 
+
+does the same job, and the program
+
+    { print > $1 }
+
+puts every input line into a file named by the first field.
+
+In print and printf statements, if an expression in the argument list contains a relational operator, then either that expression or the argument list needs to be parenthesized. This rule eliminates any potential ambiguity arising from the redirection operator >. In
+
+    { print $1, $2 > $3 }
+
+> is the redirection operator, and hence not part of the second expression, so the values of the first two fields are written to the file named in the third field. If you want the second expression to include the > operator, use parentheses:
+
+    { print $1, ($2 > $3) }
+
+It is also important to note that a redirection operator opens a file only once; each successive print or printf statement adds more data to the open file. When the redirection operator > is used, the file is initially cleared before any output is written to it. If >> is used instead of >, the file is not initially cleared; output is appended after the original contents.
+
+Output Into Pipes
+
+It is also possible to direct output into a pipe instead of a file on systems that
+support pipes. The statement 
+
+    print | command
+
+causes the output of print to be piped into the command.
+
+Suppose we want to create a list of continent-population pairs, sorted in reverse numeric order by population. The program below accumulates in an array pop the population values in the third field for each of the distinct continent names in the fourth field. The END action prints each continent name and its population, and pipes this output into a suitable sort command.
+
+    # print continents and populations, sorted by population
+    BEGIN { FS = "\t" }
+    { pop[$4] += $3 }
+    END { for (c in pop)
+    printf("%15s\t%6d\n", c, pop[c]) | "sort -t'\t' +1rn"
+    }
+
+This yields
+
+
+============================================
+
+        Asia            2173 
+        North America   340 
+        Europe          172 
+        South America   134
+
+Another use for a pipe is writing onto the standard error file on Unix systems; output written there appears on the user's terminal instead of the standard output. There are several idioms for writing on the standard error file:
+
+    print message | "cat 1>&2" # redirect cat to stderr 
+    system( "echo '" message "' 1>&2") # redirect echo to stderr 
+    print message > "/dev/tty" # write directly on terminal
+
+Although most of our examples show literal strings enclosed in quotes, command lines and filenames can be specified by any expression. In print statements involving redirection of output, the files or pipes are identified by their names; that is, the pipe in the program above is literally named
+
+    sort -t'\t' +1rn
+
+Normally, a file or pipe is created and opened only once during the run of a program. If the file or pipe is explicitly closed and then reused, it will be reopened.
+
+Closing Flies and Pipes
+
+The statement close(expr) closes a file or pipe denoted by expr; the string value of expr must be the same as the string used to create the file or pipe in the first place. Thus
+
+    close("sort -t'\t' +1rn")
+
+closes the sort pipe opened above.
+
+close is necessary if you intend to write a file, then read it later in the same program. There are also system-defined limits on the number of files and pipes that can be open at the same time.
+
+2.5 Input
+
+There are several ways of providing input to an awk program. The most common arrangement is to put input data in a file, say data, and then type
+
+    awk 'program' data
+
+Awk reads its standard input if no filenames are given; thus, a second common arrangement is to have another program pipe its output into awk. For example, the program egrep selects input lines containing a specified regular expression, but it does this much faster than awk does. We could therefore type the command
+
+
+============================================
+
+    egrep 'Asia' countries | awk 'program'
+
+eqrep finds the lines containing Asia and passes them on to the awk program for subsequent processing.
+
+Input Separators
+
+The default value of the built-in variable FS is " " , that is, a single blank. When FS has this specific value, input fields are separated by blanks and/or tabs, and leading blanks and tabs are discarded, so each of the following lines has the same first field:
+
+    field1 
+        field1
+            field1    field2
+
+When FS has any other value, however, leading blanks and tabs are not discarded.
+
+The field separator can be changed by assigning a string to the built-in variable FS. If the string is longer than one character, it is taken to be a regular expression. The leftmost longest nonnull and nonoverlapping substrings matched by that regular expression become the field separators in the current input line. For example,
+
+    BEGIN { FS =",[ \t]*|[ \t]+" }
+
+makes every string consisting of a comma followed by blanks and tabs, and every string of blanks and tabs without a comma, into field separators.
+
+When FS is set to a single character other than blank, that character becomes the field separator. This convention makes it easy to use regular expression metacharacters as field separators:
+
+    FS = "|"
+
+makes | a field separator. But note that something indirect like
+
+    FS = "[ ]"
+
+is required to set the field separator to a single blank.
+
+FS can also be set on the command line with the -F argument. The command line 
+
+    awk -F',[ \t]*|[ \t)+' 'program'
+
+sets the field separator to the same strings as the BEGIN action shown above.
+
+Multiline Records
+
+By default, records are separated by newlines, so the terms "line" and "record" are normally synonymous. The default record separator can be changed in a limited way, however, by assigning a new value to the built-in record-separator variable RS. If RS is set to the null string, as in
+
+
+============================================
+
+    BEGIN { RS = "" }
+
+then records are separated by one or more blank lines and each record can therefore occupy several lines. Setting RS back to newline with the assignment RS = 11 \n" restores the default behavior. With multiline records, no matter what value FS has, newline is always one of the field separators.
+
+A common way to process multiline records is to use 
+
+    BEGIN { RS = ""; FS = "\n" }
+
+to set the record separator to one or more blank lines and the field separator to a newline alone; each line is thus a separate field. There is a limit on how long a record can be, usually about 3000 characters. Chapter 3 contains more dis- cussion of how to handle multiline records.
+
+The getline Function
+
+The function getline can be used to read input either from the current input or from a file or pipe. By itself, g e t l i n e fetches the next input record and performs the normal field-splitting operations on it. It sets NF, NR, and FNR; it returns I if there was a record present, 0 if end-of-file was encountered, and -1 if some error occurred (such as failure to open a file).
+
+The expression g e t l i n e x reads the next record into the variable x and increments NR and FNR. No splitting is done; NF is not set.
+
+The expression 
+
+    getline <"file"
+
+reads from f i l e instead of the current input. It has no effect on NR or FNR, but field splitting is performed and NF is set.
+
+The expression
+
+    getline x <"file 11
+
+gets the next record from file into x; no splitting is done, and NF, NR, and FNR are untouched.
+
+Table 2-11 summarizes the forms of the getline function. The value of each expression is the value returned by getline.
+
+As an example, this program copies its input to its output, except that each line like
+
+    #include "filename"
+
+is replaced by the contents of the file filename.
+
+
+
+============================================
+
+        TABLE 2-11. GETLINE fUNCTION
+
+============================================
+
+    EXPRESSION          SETS
+
+    getline             $0, NF, NR, FNR 
+    getline var         var, NR, FNR
+    getline <file       $0, NF
+    getline var <file   var
+    cmd | getline       $0,NF
+    cmd | getline var   var
+============================================
+
+# include - replace #include "f" by contents of file f
+
+    /"#include/ {
+        gsub(/"1, "", $2)
+        while (getline x <$2 > 0)
+            print x 
+        next
+    }
+    { print }
+
+It is also possible to pipe the output of another command directly into getline. For example, the statement
+
+    while ("who" : getline) 
+    n++
+
+executes the Unix program who (once only) and pipes its output into getline. The output of who is a list of the users logged in. Each iteration of the while loop reads one more line from this list and increments the variable n, so after the while loop terminates, n contains a count of the number of users. Similarly, the expression
+
+    "date" | getline d
+
+pipes the output of the date command into the variable d, thus setting d to the current date. Again, input pipes may not be available on non-Unix systems.
+
+In all cases involving getline, you should be aware of the possibility of an error return if the file can't be accessed. Although it's appealing to write
+
+    while (getline <"file") ... # Dangerous
+
+that's an infinite loop if file doesn't exist, because with a nonexistent file g e t l i n e returns - I , a nonzero value that represents true. The preferred way is
+
+    while (getline <"file"> 0) ... #Safe
+
+Here the loop will be executed only when getline returns 1.
+
+
+============================================
+
+Command-Line Variable Assignments
+
+As we have seen, an awk command line can have several forms:
+
+    awk 'program' f1 f2 ...
+    awk -f progfile f1 f2 ...
+    awk -Fsep 'program' f1 f2 ...
+    awk -Fsep -f progfile f1 f2 ...
+
+In these command lines, f1, f2, etc., are command-line arguments that normally represent filenames. If a filename has the form var-text, however, it is treated as an assignment of text to var, performed at the time when that argument would otherwise be accessed as a file. This type of assignment allows variables to be changed before and after a file is read.
+
+Command-Line Arguments
+
+The command-line arguments are available to the awk program in a built-in array called ARGV. The value of the built-in variable ARGC is one more than the number of arguments. With the command line
+
+    awk -f progfile a v=1 b
+
+ARGC has the value 4, ARGV[0] contains awk, ARGV[1] contains a, ARGV[2] contains v= 1, and ARGV [3] contains b. ARGC is one more than the number of arguments because awk, the name of the command, is counted as argument zero, as it is in C programs. If the awk program appears on the command line, however, the program is not treated as an argument, nor is - f filename or any
+-F option. For example, with the command line 
+
+    awk -F'\t' 'S3 > 100' countries
+
+ARGC is 2 and ARGV[ 1] is countries.
+
+The following program echoes its command-line arguments:
+
+    # echo - print command-line arguments
+
+    BEGIN {
+        for (i =1; i < ARGC; i++)
+            printf "%s ", ARGV[i] 
+        printf "\n"
+    }
+
+Notice that everything happens in the BEGIN action: because there are no other pattern-action statements, the arguments are never treated as filenames, and no input is read.
+
+Another program using command-line arguments is seq, which generates sequences of integers:
+
+
+============================================
 
