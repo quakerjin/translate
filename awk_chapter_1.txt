@@ -2425,29 +2425,29 @@ By default, records are separated by newlines, so the terms "line" and "record" 
 
     BEGIN { RS = "" }
 
-then records are separated by one or more blank lines and each record can therefore occupy several lines. Setting RS back to newline with the assignment RS = 11 \n" restores the default behavior. With multiline records, no matter what value FS has, newline is always one of the field separators.
+then records are separated by one or more blank lines and each record can therefore occupy several lines. Setting RS back to newline with the assignment RS = "\n" restores the default behavior. With multiline records, no matter what value FS has, newline is always one of the field separators.
 
 A common way to process multiline records is to use 
 
     BEGIN { RS = ""; FS = "\n" }
 
-to set the record separator to one or more blank lines and the field separator to a newline alone; each line is thus a separate field. There is a limit on how long a record can be, usually about 3000 characters. Chapter 3 contains more dis- cussion of how to handle multiline records.
+to set the record separator to one or more blank lines and the field separator to a newline alone; each line is thus a separate field. There is a limit on how long a record can be, usually about 3000 characters. Chapter 3 contains more discussion of how to handle multiline records.
 
 The getline Function
 
-The function getline can be used to read input either from the current input or from a file or pipe. By itself, g e t l i n e fetches the next input record and performs the normal field-splitting operations on it. It sets NF, NR, and FNR; it returns I if there was a record present, 0 if end-of-file was encountered, and -1 if some error occurred (such as failure to open a file).
+The function getline can be used to read input either from the current input or from a file or pipe. By itself, getline fetches the next input record and performs the normal field-splitting operations on it. It sets NF, NR, and FNR; it returns 1 if there was a record present, 0 if end-of-file was encountered, and -1 if some error occurred (such as failure to open a file).
 
-The expression g e t l i n e x reads the next record into the variable x and increments NR and FNR. No splitting is done; NF is not set.
+The expression getline x reads the next record into the variable x and increments NR and FNR. No splitting is done; NF is not set.
 
 The expression 
 
     getline <"file"
 
-reads from f i l e instead of the current input. It has no effect on NR or FNR, but field splitting is performed and NF is set.
+reads from file instead of the current input. It has no effect on NR or FNR, but field splitting is performed and NF is set.
 
 The expression
 
-    getline x <"file 11
+    getline x <"file "
 
 gets the next record from file into x; no splitting is done, and NF, NR, and FNR are untouched.
 
@@ -2479,8 +2479,8 @@ is replaced by the contents of the file filename.
 
 # include - replace #include "f" by contents of file f
 
-    /"#include/ {
-        gsub(/"1, "", $2)
+    /^#include/ {
+        gsub(/"/, "", $2)
         while (getline x <$2 > 0)
             print x 
         next
@@ -2489,10 +2489,12 @@ is replaced by the contents of the file filename.
 
 It is also possible to pipe the output of another command directly into getline. For example, the statement
 
-    while ("who" : getline) 
-    n++
+    while ("who" | getline) 
+        n++
 
-executes the Unix program who (once only) and pipes its output into getline. The output of who is a list of the users logged in. Each iteration of the while loop reads one more line from this list and increments the variable n, so after the while loop terminates, n contains a count of the number of users. Similarly, the expression
+executes the Unix program who (once only) and pipes its output into getline. The output of who is a list of the users logged in. Each iteration of the while loop reads one more line from this list and increments the variable n, so after the while loop terminates, n contains a count of the number of users.
+
+Similarly, the expression
 
     "date" | getline d
 
@@ -2502,9 +2504,9 @@ In all cases involving getline, you should be aware of the possibility of an err
 
     while (getline <"file") ... # Dangerous
 
-that's an infinite loop if file doesn't exist, because with a nonexistent file g e t l i n e returns - I , a nonzero value that represents true. The preferred way is
+that's an infinite loop if file doesn't exist, because with a nonexistent file getline returns -1 , a nonzero value that represents true. The preferred way is
 
-    while (getline <"file"> 0) ... #Safe
+    while (getline <"file" > 0) ... #Safe
 
 Here the loop will be executed only when getline returns 1.
 
@@ -2548,6 +2550,115 @@ The following program echoes its command-line arguments:
 Notice that everything happens in the BEGIN action: because there are no other pattern-action statements, the arguments are never treated as filenames, and no input is read.
 
 Another program using command-line arguments is seq, which generates sequences of integers:
+
+
+============================================
+
+    # seq - print sequences of integers
+    # input: arguments q, p q, or p q r; q >= p; r > 0
+    # output: integers 1 to q, p to q, or p to q in steps of r
+
+    BEGIN {
+        if (ARGC == 2 )
+            for (i = 1; i <= ARGV[1]; i++) print i
+        else if (ARGC == 3)
+            for (i = ARGV[1]; i <= ARGV[2]; i++)
+                print i 
+        else if (ARGC == 4)
+            for ( i = ARGV[1]; i <= ARGV[2]; i += ARGV[3]) 
+                print i
+          }
+
+The commands
+
+    awk -f seq 10 
+    awk -f seq 1 10 
+    awk -f seq 1 10
+
+all generate the integers one through ten.
+
+The arguments in ARGV may be modified or added to; ARGC may be altered.
+
+As each input file ends, awk treats the next nonnull element of ARGV (up through the current value of ARGC-1) as the name of the next input file. Thus setting an element of ARGV to null means that it will not be treated as an input file. The name 11 - 11 may be used for the standard input.
+
+2.6 Interaction with Other Programs
+
+This section describes some of the ways in which awk programs can cooperate with other commands. The discussion applies primarily to the Unix operating system; the examples here may fail or work differently on non-Unix systems.
+
+The system Function
+
+The built-in function system(expression) executes the command given by the string value of expression. The value returned by system is the status returned by the command executed.
+
+For example, we can build another version of the file-inclusion program of Section 2.5 like this:
+
+    $1 == "#include" { gsub(/"/, "", $2); system("cat " $2); next} 
+                    { print }
+
+If the first field is #include, quotes are removed, and the Unix command cat is called to print the file named in the second field. Other lines are just copied.
+
+
+============================================
+
+Making a Shell Command from an AWK Program
+
+In all of the examples so far, the awk program was in a file and fetched with the -f flag, or it appeared on the command line enclosed in single quotes, like this:
+
+    awk '{print $1 }' ...
+
+Since awk uses many of the same characters as the shell does, such as $ and " surrounding the program with single quotes ensures that the shell will pass the entire program unchanged to awk.
+
+Both methods of invoking the awk program require some typing. To reduce the number of keystrokes, we might want to put both the command and the pro- gram into an executable file, and invoke the command by typing just the name of the file. Suppose we want to create a command f i e l d 1 that will print the first field of each line of input. This is easy: we put
+
+    awk '{print $1}' $*
+
+into the file field1, and make the file executable by typing the Unix command
+
+    chmod +x field1
+
+We can now print the first field of each line of a set of files by typing
+
+    field 1 filenames ...
+
+Now, consider writing a more general command field that will print an arbitrary combination of fields from each line of its input; in other words, the command
+
+    field n1 n2 ... file1 file2 ...
+
+will print the specified fields in the specified order. How do we get the value of each n; into the awk program each time it is run and how do we distinguish the n;'s from the filename arguments?
+
+There are several ways to do this if one is adept in shell programming. The simplest way that uses only awk, however, is to scan through the built-in array ARGV to process the n;'s, resetting each such argument to the null string so that it is not treated as a filename.
+
+
+============================================
+
+    # field - print named fields of each input line 
+    # usage: field n n n ... file file file ...
+    awk ' 
+    BEGIN {
+        for (i = 1; ARGV[i] - /A[0-9]+S/; i++) { # collect numbers
+            fld[++nf] = ARGV[i]
+            ARGV[i] = ""
+        }
+        if (i >= ARGC) # no file names so force stdin 
+            ARGV[ARGC++] = "-"
+    }
+
+    {   for (i = 1; i <= nf; i++)
+            printf(""s%s", Sfld[i], i < nf? " " "\n")
+    }
+    ' $*
+
+This version can deal with either standard input or a list of filename arguments, and with any number of fields in any order.
+
+2 . 7 Summary
+
+As we said earlier, this is a long chapter, packed with details, and you are dedicated indeed if you have read every word to get here. You will find that it pays to go back and re-read sections from time to time, either to see precisely how something works, or because one of the examples in later chapters suggests a construction that you might not have tried before.
+
+Awk, like any language, is best learned by experience and practice, so we encourage you to go off and write your own programs. They don't have to be big or complicated - you can usually learn how some feature works or test some crucial point with only a couple of lines of code, and you can just type in data to see how the program behaves.
+
+Bibliographic Notes
+
+The programming language C is described in The C Programming Language, by Brian Kernighan and Dennis Ritchie (Prentice-Hall, 1978). There are numerous books on how to use the Unix system; The Unix Program- ming Environment, by Brian Kernighan and Rob Pike (Prentice-Hall, 1984) has an extensive discussion of how to create shell programs that include awk.
+
 
 
 ============================================
