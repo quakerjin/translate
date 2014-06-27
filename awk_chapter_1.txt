@@ -2522,7 +2522,7 @@ As we have seen, an awk command line can have several forms:
     awk -Fsep 'program' f1 f2 ...
     awk -Fsep -f progfile f1 f2 ...
 
-In these command lines, f1, f2, etc., are command-line arguments that normally represent filenames. If a filename has the form var-text, however, it is treated as an assignment of text to var, performed at the time when that argument would otherwise be accessed as a file. This type of assignment allows variables to be changed before and after a file is read.
+In these command lines, f1, f2, etc., are command-line arguments that normally represent filenames. If a filename has the form var=text, however, it is treated as an assignment of text to var, performed at the time when that argument would otherwise be accessed as a file. This type of assignment allows variables to be changed before and after a file is read.
 
 Command-Line Arguments
 
@@ -2533,7 +2533,7 @@ The command-line arguments are available to the awk program in a built-in array 
 ARGC has the value 4, ARGV[0] contains awk, ARGV[1] contains a, ARGV[2] contains v= 1, and ARGV [3] contains b. ARGC is one more than the number of arguments because awk, the name of the command, is counted as argument zero, as it is in C programs. If the awk program appears on the command line, however, the program is not treated as an argument, nor is - f filename or any
 -F option. For example, with the command line 
 
-    awk -F'\t' 'S3 > 100' countries
+    awk -F'\t' '$3 > 100' countries
 
 ARGC is 2 and ARGV[ 1] is countries.
 
@@ -2662,4 +2662,69 @@ The programming language C is described in The C Programming Language, by Brian 
 
 
 ============================================
+
+第三章
+
+DATA PROCESSING
+
+Awk was originally intended for everyday data-processing tasks, such as information retrieval, data validation, and data transformation and reduction. We have already seen simple examples of these in Chapters 1 and 2. In this chapter, we will consider more complex tasks of a similar nature. Most of the examples deal with the usual line-at-a-time processing, but the final section describes how to handle data where an input record may occupy several lines.
+
+Awk programs are often developed incrementally: a few lines are written and tested, then a few more added, and so on. Many of the longer programs in this book were developed in this way.
+
+It's also possible to write awk programs in the traditional way, sketching the outline of the program, consulting the language manual, and so forth. But modifying an existing program to get the desired effect is frequently easier. The programs in this book thus serve another purpose, providing useful models for programming by example.
+
+3.1 Data Transformation and Reduction
+
+One of the most common uses of awk is to transform data from one form to another, usually from the form produced by one program to a different form required by some other program. Another use is selection of relevant data from a larger data set, often with reformatting and the preparation of summary infor- mation. This section contains a variety of examples of these topics.
+
+Summing Columns
+
+We have already seen several variants of the two-line awk program that adds up all the numbers in a single field. The following program performs a some- what more complicated but still representative data-reduction task. Every input line has several fields, each containing numbers, and the task is to compute the sum of each column of numbers, regardless of how many columns there are.
+
+
+============================================
+
+    # sum1 - print column sums
+    # input: rows of numbers 
+    # output: sum of each column
+    #      missing entries are treated as zeros
+
+    {for (i = 1; i <= NF; i++) 
+        sum[i] += Si
+    if (NF > maxfld) 
+        maxfld = NF
+    }
+    END {for (i = 1; i <= maxfld; i++) { 
+        printf("%g", sum[i])
+        if (i < maxfld)
+            printf("\t")
+        else
+            printf ("\n")
+        }
+        }
+
+Automatic initialization is convenient here since maxfld, the largest number of fields seen so far in any row, starts off at zero automatically, as do all of the entries in the sum array, even though it's not known until the end how many there are. It's also worth noting that the program prints nothing if the input file is empty.
+
+It's convenient that the program doesn't need to be told how many fields a row has, but it doesn't check that the entries are all numbers, nor that each row has the same number of entries. The following program does the same job, but also checks that each row has the same number of entries as the first:
+
+    # sum2 - print column sums
+    # check that each line has the same number of fields 
+    #  as line one
+
+    NR==1 { nfld = NF }
+        { for (i = 1; i <= NF; i++)
+            sum[i] += $i 
+          if (NF I= nfld)
+             print "line"  NR " has 11 NF " entries, not " nfld
+        }
+   END { for (i = 1; i <= nfld; i++)
+        printf("%g%s", sum[i], i < nfld? "\t" : "\n")
+       }
+
+We also revised the output code in the END action, to show how a conditional expression can be used to put tabs between the column sums and a newline after the last sum.
+
+Now suppose that some of the fields are nonnumeric, so they shouldn't be included in the sums. The strategy is to add an array numcol to keep track of which fields are numeric, and a function isnum to check if an entry is a number. This is made a function so the test is only in one place, in anticipation
+
+============================================
+
 
