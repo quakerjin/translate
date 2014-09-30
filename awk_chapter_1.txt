@@ -2689,18 +2689,18 @@ We have already seen several variants of the two-line awk program that adds up a
     # output: sum of each column
     #      missing entries are treated as zeros
 
-    {for (i = 1; i <= NF; i++) 
-        sum[i] += Si
-    if (NF > maxfld) 
-        maxfld = NF
+    { for (i = 1; i <= NF; i++) 
+            sum[i] += $i
+      if (NF > maxfld) 
+            maxfld = NF
     }
-    END {for (i = 1; i <= maxfld; i++) { 
-        printf("%g", sum[i])
-        if (i < maxfld)
-            printf("\t")
-        else
-            printf ("\n")
-        }
+    END { for (i = 1; i <= maxfld; i++) { 
+               printf("%g", sum[i])
+               if (i < maxfld)
+                   printf("\t")
+               else
+                   printf ("\n")
+            }
         }
 
 Automatic initialization is convenient here since maxfld, the largest number of fields seen so far in any row, starts off at zero automatically, as do all of the entries in the sum array, even though it's not known until the end how many there are. It's also worth noting that the program prints nothing if the input file is empty.
@@ -2714,8 +2714,8 @@ It's convenient that the program doesn't need to be told how many fields a row h
     NR==1 { nfld = NF }
         { for (i = 1; i <= NF; i++)
             sum[i] += $i 
-          if (NF I= nfld)
-             print "line"  NR " has 11 NF " entries, not " nfld
+          if (NF != nfld)
+             print "line"  NR " has " NF " entries, not " nfld 
         }
    END { for (i = 1; i <= nfld; i++)
         printf("%g%s", sum[i], i < nfld? "\t" : "\n")
@@ -2727,7 +2727,7 @@ Now suppose that some of the fields are nonnumeric, so they shouldn't be include
 
 ============================================
 
-of future changes. If the program can trust its input, it need only look at the first line to tell if a field will be numeric. The variable n f l d is needed because NF is zero inside the END action.
+of future changes. If the program can trust its input, it need only look at the first line to tell if a field will be numeric. The variable nfld is needed because NF is zero inside the END action.
 
     # sum3 - print sums of numeric columns
     # input: rows of integers and strings 
@@ -2736,7 +2736,7 @@ of future changes. If the program can trust its input, it need only look at the 
 
     NR == 1 { nfld = NF
               for (i = 1; i <= NF; i++)
-                  numcol[i] = isnum(Si)
+                  numcol[i] = isnum($i)
             }
             { for (i = 1; i <= NF; i++) 
                     if (numcol[i])
@@ -2744,13 +2744,13 @@ of future changes. If the program can trust its input, it need only look at the 
             }
     END     { for (i = 1; i <= nfld; i++) { 
                   if (numcol[i])
-                        printf("%g11 , sum[i])
+                        printf("%g" , sum[i])
                   else
                         printf("--" )
-                  printf(i < nfld "\t" : "\n")
+                  printf(i < nfld ? "\t" : "\n")
               }
              }
-    function isnum(n) { return n - /~[+-]?[0-9]+$/ }
+    function isnum(n) { return n ~ /^[+-]?[0-9]+$/ }
 
 The function isnum defines a number as one or more digits, perhaps preceded by a sign. A more general definition for numbers can be found in the discussion of regular expressions in Section 2.1.
 
@@ -2760,11 +2760,11 @@ Exercise 3-2. Add the more general regular expression for a number. How does it 
 
 Exercise 3-3. What is the effect of removing the test of numcol in the second for statement? 
 
-Exercise 3-4. Write a program that reads a list of item and quantity pairs and for each item on the list accumulates the total quantity; at the end, it prints the items and total quantities, sorted alphabetically by item. 
+Exercise 3-4. Write a program that reads a list of item and quantity pairs and for each item on the list accumulates the total quantity; at the end, it prints the items and total quantities； sorted alphabetically by item. 
 
 Computing Percentages and Quantiles
 
-Suppose that we want not the sum of a column of numbers but what percen- tage each is of the total. This requires two passes over the data. If there's only one column of numbers and not too much data, the easiest way is to store the numbers in an array on the first pass, then compute the percentages on the second pass as the values are being printed:
+Suppose that we want not the sum of a column of numbers but what percentage each is of the total. This requires two passes over the data. If there's only one column of numbers and not too much data, the easiest way is to store the numbers in an array on the first pass, then compute the percentages on the second pass as the values are being printed:
 
 
 ============================================
@@ -2776,7 +2776,7 @@ Suppose that we want not the sum of a column of numbers but what percen- tage ea
         { x[NR] = $1; sum+= $1 }
     END { if (sum != 0)
                 for (i = 1; i <= NR; i++)
-                        printf(''%10.2f %5.1f\n", x[i], 100*x[i)/sum)
+                        printf("%10.2f %5.1f\n", x[i], 100*x[i)/sum)
         }
 
 This same approach, though with a more complicated transformation, could be used, for example, in adjusting student grades to fit some curve. Once the grades have been computed (as numbers between 0 and 100), it might be interesting to see a histogram:
@@ -2830,7 +2830,7 @@ It produces this output:
 
 Exercise 3-5.  Scale the rows of stars so they don't overflow the line length when there'sa lot of data. 
 
-Exercise 3-6. Make a version of the histogram code that divides the input into a speci- fied number of buckets, adjusting the ranges according to the data seen. 
+Exercise 3-6. Make a version of the histogram code that divides the input into a specified number of buckets, adjusting the ranges according to the data seen. 
 
 Numbers with Commas
 
@@ -2845,7 +2845,7 @@ The effect of gsub (/, /, "" ) is to replace every comma with the null string, t
 
 This program doesn't check that the commas are in the right places, nor does it print commas in its answer. Putting commas into numbers requires only a little effort, as the next program shows. It formats numbers with commas and two digits after the decimal point. The structure of this program is a useful one to emulate: it contains a function that only does the new thing, with the rest of the program just reading and printing. After it's been tested and is working, the new function can be included in the final program.
 
-The basic idea is to insert commas from the decimal point to the left in a loop; each iteration puts a comma in front of the leftmost three digits that are followed by a comma or decimal point, provided there will be at least one addi- tional digit in front of the comma. The algorithm uses recursion to handle negative numbers: if the input is negative, the function addcomma calls itself with the positive value, tacks on a leading minus sign, and returns the result.
+The basic idea is to insert commas from the decimal point to the left in a loop; each iteration puts a comma in front of the leftmost three digits that are followed by a comma or decimal point, provided there will be at least one additional digit in front of the comma. The algorithm uses recursion to handle negative numbers: if the input is negative, the function addcomma calls itself with the positive value, tacks on a leading minus sign, and returns the result.
 
 
 
@@ -2856,16 +2856,16 @@ The basic idea is to insert commas from the decimal point to the left in a loop;
     # output: the input number followed by
     #  the number with commas and two decimal places 
     
-        { printf ( "%-12s %20s\n", $0, addcomma( $0)) }
+        { printf ( "%-12s %20s\n", $0, addcomma($0)) }
     
-    function addcomma(x,  num) { 
+    function addcomma(x, num) { 
         if (x < 0)
             return "-" addcomma(-x)
         num = sprintf("%.2f", x) # num is dddddd.dd while 
         while(num ~ /[0-9][0-9][0-9][0-9]/)
             sub(/[0-9][0-9][0-9][,.]/, ",&", num) 
         return num
-
+    }
 Note the use of the & in the replacement text for sub to add a comma before each triplet of numbers.
 
 Here are the results for some test data:
@@ -2883,7 +2883,7 @@ Exercise 3-7. Modify sumcomma, the program that adds numbers with commas, to che
 
 Fixed-Field Input
 
-Information appearing in fixed-width fields often requires some kind of preprocessing before it can be used directly. Some programs, such as spreadsheets, put out numbers in fixed columns, rather than with field separa- tors; if the numbers are too wide, the columns abut. Fixed-field data is best handled with substr, which can be used to pick apart any combination of columns. For example, suppose the first six characters of each line contain a date in the form mmddyy. The easiest way to sort this by date is to convert the dates into the form yymmdd:
+Information appearing in fixed-width fields often requires some kind of preprocessing before it can be used directly. Some programs, such as spreadsheets, put out numbers in fixed columns, rather than with field separators; if the numbers are too wide, the columns abut. Fixed-field data is best handled with substr, which can be used to pick apart any combination of columns. For example, suppose the first six characters of each line contain a date in the form mmddyy. The easiest way to sort this by date is to convert the dates into the form yymmdd:
 
     # date convert - convert mmddyy into yymmdd in $1
     { $1 = substr($1,5,2) substr($1,1,2) substr($1,3,2); print }
@@ -2913,7 +2913,7 @@ Exercise 3-8. How would you convert dates into a form in which you can do arithm
 
 Program Cross-Reference Checking
 
-Awk is often used to extract information from the output of other programs. Sometimes that output is merely a set of homogeneous lines, in which case field-splitting or s u b s t r operations are quite adequate. Sometimes, however, the upstream program thinks its output is intended for people. In that case, the task of the awk program is to undo careful formatting, so as to extract the information from the irrelevant. The next example is a simple instance.
+Awk is often used to extract information from the output of other programs. Sometimes that output is merely a set of homogeneous lines, in which case field-splitting or substr operations are quite adequate. Sometimes, however, the upstream program thinks its output is intended for people. In that case, the task of the awk program is to undo careful formatting, so as to extract the information from the irrelevant. The next example is a simple instance.
 
 Large programs are built from many files. It is convenient (and sometimes vital) to know which file defines which function, and where the function is used. To that end, the Unix program nm prints a neatly formatted list of the names, definitions, and uses of the names in a set of object files. A typical fragment of its output looks like this:
 
@@ -2936,7 +2936,214 @@ Using this raw output to determine what file defines or uses a particular symbol
 
 ============================================
 
+that make up awk itself. A three-line awk program, however, can add the name to each item, so subsequent programs can retrieve the useful information from one line:
+
+    # nm.format - add filename to each nm output line
+
+    NF== {file=$1}
+    NF == 2 { print file, $1, $2 } 
+    NF == 3 { print file, S2, $3 }
+
+The output from run. format on the data shown above is
+
+    file.o: T _addroot 
+    file.o: T _checkdev 
+    file.o: T _checkdupl 
+    file.o: U _chown 
+    file.o: U _client 
+    file.o: U _close 
+    funmount.o: T _funmount 
+    funmount.o: u cerror
+
+Now it is easy for other programs to search this output or process it further. 
+
+This technique does not provide line number information nor tell how many times a name is used in a file, but these things can be found by a text editor or another awk program. Nor does it depend on which language the programs are written in, so it is much more flexible than the usual run of cross-referencing tools, and shorter and simpler too.
+
+Formatted Output
+
+As another example we'll use awk to make money, or at least to print checks. The input consists of lines, each containing a check number, an amount, and a payee, separated by tabs. The output goes on check forms, eight lines high. The second and third lines have the check number and date indented 45 spaces, the fourth line contains the payee in a field 45 characters long, fol- lowed by three blanks, followed by the amount. The fifth line contains the amount in words, and the other lines are blank. A check looks like this:
+
+1026
+Jun 17, 1987
+Pay to Mary R. W orth-------------------------------- $123.45
+the sum of one hundred twenty three dollars and 45 cents exactly
 
 
+Here is the code:
+
+============================================
+
+    # prchecks - print formatted checks
+    # input: number \ t amount \ t payee
+    # output: eight lines of text for preprinted check forms
+    BEGIN {
+        FS ="\t"
+        dashes = sp45 =sprintf("%45s", " ")
+        gsub (/ /, "-" , dashes )  # to protect the payee
+        "date" | getline date      # get today's date
+        split(date, d, n ")
+        date =d[2] " " d[3] ", " d[6] 
+        initnum() #set up tables for number conversion
+    }
+
+    NF != 3 || S2 >= 1000000 { #illegal data
+        printf("\nline %d illegal:\n%s\n\nVOID\nVOID\n\n\n", NR, $0)
+        next        # no check printed
+    }
+
+    {   printf("\n")    # nothing on line 1
+        printf("%s%s\n", sp45, $1) # number indented 45 spaces
+        printf("%s%s\n", sp45, date) #date, indented 45 spaces 
+        amt =sprintf("%.2f", $2) #formatted amount 
+        printf("Pay to %45.45s S%s\n", $3 dashes, amt) # line 4 
+        printf("the sum of %s\n", numtowords(amt)) #line 5 
+        printf("\n\n\n") #lines 6, 7 and 8
+    }
+    function numtowords(n, cents, dols) { # n has 2 decimal places 
+        cents = substr(n, length(n)-1, 2)
+        dols = substr(n, 1, length(n)-3)
+        if (dols == 0)
+           return "zero dollars and " cents " cents exactly"
+        return intowords(dols) " dollars and " cents " cents exactly"
+    }
+    function intowords(n) { 
+        n =int(n)
+        if (n >= 1000)
+            return intowords(n/1000) " thousand " intowords(n%1000)
+        if (n >= 100)
+            return intowords(n/100) " hundred " intowords(n%100)
+        if (n >= 20)
+            return tens[int(n/10)] " " intowords(n%10)
+        return nums[n]
+    }
+    function initnum() {
+        split("one two three four five six seven eight nine " \
+              "ten eleven twelve thirteen fourteen fifteen " \
+              "sixteen seventeen eighteen nineteen", nums, " ") 
+        split("ten twenty thirty forty fifty sixty " \
+              "seventy eighty ninety", tens, " " )
+    }
+
+============================================
+
+The program contains several interesting constructs. First, notice how we generate a long string of blanks in the BEGIN action with sprint£, and then convert them to dashes by substitution. Note also how we combine line con- tinuation and string concatenation to create the string argument to split in the function initnum; this is a useful idiom.
+
+The date comes from the system by the line
+
+    "date" | getline date # get today's date
+
+which runs the date command and pipes its output into qetline. A little processing converts the date from
+
+    Wed Jun 17 13:39:36 EDT 1987
+
+into
+
+    Jun 17, 1987
+
+(This may need revision on non-Unix systems that do not support pipes.)
+
+The functions numtowords and intowords convert numbers to words. They are straightforward, although about half the program is devoted to them. The function intowords is recursive: it calls itself to deal with a simpler part of the problem. This is the second example of recursion in this chapter, and we will see others later on. In each case, recursion is an effective way to break a big job into smaller, more manageable pieces.
+
+Exercise 3·9. Use the function addcomma from a previous example to include commas in the printed amount.
+
+Exercise 3-10. The program prchecks does not deal with negative quantities or very long amounts in a graceful way. Modify the program to reject requests for checks for negative amounts and to split very long amounts onto two lines. 
+
+Exercise 3-11. The function numtowords sometimes puts out two blanks in a row. It also produces blunders like "one dollars." How would you fix these defects? 
+
+Exercise 3-12. Modify the program to put hyphens into the proper places in spelled-out amounts, as in "twenty-one dollars." 
+
+3.2 Data Validation
+
+Another common use for awk programs is data validation: making sure that data is legal or at least plausible. This section contains several small programs that check input for validity. For example, consider the column-summing pro- grams in the previous section. Are there any numeric fields where there should be nonnumeric ones, or vice versa? Such a program is very close to one we saw before, with the summing removed:
+
+
+
+============================================
+
+    # colcheck - check consistency of columns
+    # input: rows of numbers and strings
+    # output: lines whose format differs from first line
+
+    NR == 1 {
+        nfld =NF
+        for (i = 1; i <= NF; i++) 
+            type[i] = isnum($i)
+    }
+    {   if (NF != nfld)
+            printf("line %d has %d fields instead of %d\n",
+                NR, NF, nfld)
+        for (i = 1; i <= NF; i++)
+            if (isnum($i) != type[i])
+                printf("field %d in line %d differs from line 1\n",
+                    i, NR)
+    }
+
+    function isnum(n) { return n ~ /^[+-]?[0-9]+$/ }
+
+The test for numbers is again just a sequence of digits with an optional sign; see the discussion of regular expressions in Section 2.1 for a more complete version.
+
+Balanced Delimiters
+
+In the machine-readable text of this book, each program is introduced by a
+line beginning with • P 1 and is terminated by a line beginning with • P 2 . These lines are text-formatting commands that make the programs come out in their distinctive font when the text is typeset. Since programs cannot be nested, these text-formatting commands must form an alternating sequence
+
+    .P1 .P2 .P1 .P2 ... .P1 .P2
+
+If one or the other of these delimiters is omitted, the output will be badly man- gled by our text formatter. To make sure that the programs would be typeset properly, we wrote this tiny delimiter checker, which is typical of a large class of such programs:
+
+    # p12check - check input for alternating .P1/.P2 delimiters
+    /^\.P1/ { if (p != 0)
+                print ".P1 after .P1, line", NR
+              p=1
+            }
+    /^\.P2/ { if (p != 1)
+                print ".P2 with no preceding .P1, line", NR
+              p=0
+            }
+
+    END     { if (p != 0) print "missing .P2 at end" }
+
+If the delimiters are in the right order, the variable p silently goes through the sequence of values 0 1 0 1 0 ... 1 0. Otherwise, the appropriate error messages
+
+
+============================================
+
+are printed.
+
+Exercise 3-13. What is the best way to extend this program to handle multiple sets of delimiter pairs?
+
+Password-File Checking
+
+The password file on a Unix system contains the name of and other informa- tion about authorized users. Each line of the password file has 7 fields, separated by colons:
+
+    root:qyxRi2uhuVjrg:0:2::/:
+    bwk:1L./v6iblzzNE:9:1:Brian Kernighan:/usr/bwk: 
+    ava:otxs1oTVoyvMQ:15:1:Al Aho:/usr/ava: 
+    uucp:xutiBs2hKtcls:48:1:uucp daemon:/usr/lib/uucp:uucico 
+    pjw:xNqy//GDc8FFg:170:2:Peter Weinberger:/usr/pjw: 
+    mark:jOz1fuQmqivdE:374:1:Mark Kernighan:/usr/bwk/mark:
+    ...
+The first field is the user's login name, which should be alphanumeric. The second is an encrypted version of the password; if this field is empty, anyone can log in pretending to be that user, while if there is a password, only people who know the password can log in. The third and fourth fields are supposed to be numeric. The sixth field should begin with /. The following program prints all lines that fail to satisfy these criteria, along with the number of the erroneous line and an appropriate diagnostic message. Running this program every night is a small part of keeping a system healthy and safe from intruders.
+
+    # passwd - check password file
+
+    BEGIN {
+        FS =":" }
+    NF != 7 {
+        printf("line %d, does not have 7 fields: %s\n", NR, $0) }
+    $1 ~ /(AA-Za-z0-9)/ {
+        printf("line %d, nonalphanumeric user id: %s\n", NR, $0) }
+    $2 == "" { 
+        printf("line %d, no password: %s\n", NR, $0) }
+    $3 ~ /[^0-9]/ { 
+        printf("line %d, nonnumeric user id: %s\n", NR, $0) } 
+    $4 ~ /[^0-9]/ { 
+        printf("line %d, nonnumeric group id: %s\n", NR, $0) }
+    $6 !~ /^\// { printf("line %d, invalid login directory: %s\n", NR, $0) }
+
+This is a good example of a program that can be developed incrementally: each time someone thinks of a new condition that should be checked, it can be added, so the program steadily becomes more thorough.
+
+
+============================================
 
 
